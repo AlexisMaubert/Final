@@ -30,6 +30,7 @@ namespace Final.Models
         public Movimiento(CajaDeAhorro Caja, string Detalle, float Monto)
         {
             this.caja = Caja;
+            this.id_Caja = Caja.id;
             this.detalle = Detalle;
             this.monto = Monto;
             this.fecha = DateTime.Now;

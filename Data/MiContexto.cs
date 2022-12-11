@@ -67,25 +67,25 @@ namespace Final.Data
                 .WithMany(u => u.pf)
                 .HasForeignKey(pf => pf.id_titular)
                 .OnDelete(DeleteBehavior.Cascade)
-                .IsRequired(false);
+                .IsRequired(true);
             modelBuilder.Entity<Movimiento>()
                 .HasOne(mov => mov.caja)
                 .WithMany(caja => caja.movimientos)
                 .HasForeignKey(m => m.id_Caja)
                 .OnDelete(DeleteBehavior.Cascade)
-                .IsRequired(false);
+                .IsRequired(true);
             modelBuilder.Entity<Pago>()
                 .HasOne(p => p.usuario)
                 .WithMany(u => u.pagos)
                 .HasForeignKey(p => p.id_usuario)
                 .OnDelete(DeleteBehavior.Cascade)
-                .IsRequired(false);
+                .IsRequired(true);
             modelBuilder.Entity<Tarjeta>()
                 .HasOne(t => t.titular)
                 .WithMany(u => u.tarjetas)
                 .HasForeignKey(t => t.id_titular)
                 .OnDelete(DeleteBehavior.Cascade)
-                .IsRequired(false);
+                .IsRequired(true);
 
             //Seteo de datos
             modelBuilder.Entity<Usuario>(

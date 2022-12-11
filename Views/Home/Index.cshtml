@@ -2,6 +2,15 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Bienvenido</h1>
+<div class="titulo-login">
+    <h1>Bienvenido</h1>
 </div>
+<div class="form-login">
+    <h2>Iniciar sesión</h2>
+    <form asp-action="Main" >
+        <input name="Dni" type="number" placeholder="Ingresar DNI" />
+        <input type="password" name="password" placeholder="Ingresar contraseña" />
+        <input type="submit" value="Ingresar">
+    </form>
+</div>
+

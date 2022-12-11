@@ -20,15 +20,6 @@ namespace Final.Models
             titulares = new List<Usuario>();
             movimientos = new List<Movimiento>();
         }
-        public CajaDeAhorro(int id, int cbu, float saldo = 0)
-        {
-            this.id = id;
-            this.cbu = cbu;
-            this.saldo = saldo;
-            titulares = new List<Usuario>();
-            movimientos = new List<Movimiento>();
-        }
-
         public CajaDeAhorro(int Cbu, Usuario Titular)//Constructor alternativo
         {
             this.cbu = Cbu;

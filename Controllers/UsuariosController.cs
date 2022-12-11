@@ -99,6 +99,7 @@ namespace Final.Controllers
                 {
                     _context.Update(usuario);
                     await _context.SaveChangesAsync();
+                    Console.Out.WriteLine("hola soy un debug");
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -123,7 +124,6 @@ namespace Final.Controllers
             {
                 return NotFound();
             }
-
             var usuario = await _context.usuarios
                 .FirstOrDefaultAsync(m => m.id == id);
             if (usuario == null)

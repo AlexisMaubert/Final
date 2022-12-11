@@ -24,6 +24,7 @@ namespace Final.Models
         public Tarjeta(int Numero, int CodigoV, Usuario Titular, float Limite)
         {
             this.titular = Titular;
+            this.id_titular = Titular.id;
             this.numero = Numero;
             this.codigoV = CodigoV;
             this.limite = Limite;
