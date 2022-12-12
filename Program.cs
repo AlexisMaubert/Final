@@ -8,6 +8,14 @@ builder.Services.AddDbContext<MiContexto>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Context"));
 
 });
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromSeconds(10);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -29,6 +37,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

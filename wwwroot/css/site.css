@@ -21,7 +21,6 @@ main {
     display:flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
 }
 nav {
     background-color: #7a969e;
@@ -32,6 +31,7 @@ nav {
     width: 50%;
     margin: 0 auto;
     text-align: center;
+    
 }
 
     .titulo-login h1 {
@@ -54,6 +54,7 @@ nav {
     background-color: #7a969e;
     border-radius: 10px;
     width: 50%;
+    align-self: center;
 }
 .form-login form{
     display: flex;

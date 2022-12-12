@@ -22,7 +22,12 @@ namespace Final.Controllers
         // GET: Usuarios
         public async Task<IActionResult> Index()
         {
-              return View(await _context.usuarios.ToListAsync());
+            var usuario = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
+            if (usuario == null)
+            {
+                return  RedirectToAction("Index", "Home");
+            }
+            return View(await _context.usuarios.ToListAsync());
         }
 
         // GET: Usuarios/Details/5

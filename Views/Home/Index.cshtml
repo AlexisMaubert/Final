@@ -7,7 +7,7 @@
 </div>
 <div class="form-login">
     <h2>Iniciar sesión</h2>
-    <form asp-action="Main" >
+    <form action="@Url.Action("Index","Home")"  method="post">
         <input name="Dni" type="number" placeholder="Ingresar DNI" />
         <input type="password" name="password" placeholder="Ingresar contraseña" />
         <input type="submit" value="Ingresar">
