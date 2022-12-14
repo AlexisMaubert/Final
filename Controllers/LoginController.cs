@@ -1,5 +1,6 @@
 ﻿using Final.Data;
 using Final.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
@@ -9,10 +10,10 @@ namespace Final.Controllers
 {
     public class LoginController : Controller
     {
-        private readonly ILogger<LoginController> _logger;
         private readonly MiContexto _context;
+        private Usuario uLogeado;
 
-        public LoginController(ILogger<LoginController> logger, MiContexto contexto)
+        public LoginController(MiContexto contexto)
         {
             _context = contexto;
             _context.usuarios
@@ -29,12 +30,20 @@ namespace Final.Controllers
             _context.pagos.Load();
             _context.movimientos.Load();
             _context.plazosFijos.Load();
-            _logger = logger;
+            
+        }
+        public Usuario usuarioLogeado() //tomar sesion del usuario
+        {
+            if (HttpContext != null)
+            {
+                return _context.usuarios.Where(u => u.id == HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
+            }
+            return null;
         }
         public IActionResult Index()
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado != null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado != null)
             {
                 return RedirectToAction("Index", "Main");
             }
@@ -57,7 +66,7 @@ namespace Final.Controllers
                     if (usuario.intentosFallidos == 3)
                     {
                         usuario.bloqueado = true;
-                        _context.Update(usuario);
+                        _context.Update(uLogeado);
                         _context.SaveChanges();
                         ViewBag.errorLogin = 3;
                     }
@@ -65,7 +74,7 @@ namespace Final.Controllers
                     {
                         ViewBag.errorLogin = 2;
                         usuario.intentosFallidos++;
-                        _context.Update(usuario);
+                        _context.Update(uLogeado);
                         _context.SaveChanges();
                     }
                     return View();

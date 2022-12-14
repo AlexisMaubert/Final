@@ -12,7 +12,7 @@
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            @if (ViewBag.Admin == "True")
+            @if (ViewData["Admin"] == "True")
             {
                 <div class="form-group">
                     <label asp-for="id_titular" class="control-label"></label>
@@ -29,7 +29,8 @@
                 <input asp-for="codigoV" class="form-control" readonly value="@ViewBag.codigoV" />
                 <span asp-validation-for="codigoV" class="text-danger"></span>
             </div>
-            @if (ViewBag.Admin == "True"){
+            @if (ViewData["Admin"] == "True")
+            {
                 <div class="form-group">
                 <label asp-for="limite" class="control-label"></label>
                 <input asp-for="limite" class="form-control"  value="@ViewBag.limite" />

@@ -9,6 +9,7 @@ namespace Final.Controllers
     public class MainController : Controller
     {
         private readonly MiContexto _context;
+        private Usuario uLogeado;
 
         public MainController(MiContexto context)
         {
@@ -28,23 +29,27 @@ namespace Final.Controllers
             _context.movimientos.Load();
             _context.plazosFijos.Load();
         }
+        public Usuario usuarioLogeado() //tomar sesion del usuario
+        {
+            if (HttpContext != null)
+            {
+                return _context.usuarios.Where(u => u.id == HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
+            }
+            return null;
+        }
         // GET: MainController
         public ActionResult Index()
         {
-            Usuario usuario = usuarioLogeado();
-            if (usuario == null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado == null)
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Login");
             }
-            if(usuario.isAdmin)
+            if (uLogeado.isAdmin)
             {
                 ViewBag.Admin = "True";
             }
             return View();
-        }
-        public Usuario usuarioLogeado() //tomar sesion del usuario
-        {
-            return _context.usuarios.Where(u => u.id == HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
         }
     }
 }

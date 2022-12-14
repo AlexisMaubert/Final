@@ -13,17 +13,38 @@ namespace Final.Controllers
     public class PlazoFijoController : Controller
     {
         private readonly MiContexto _context;
+        private Usuario uLogeado;
 
         public PlazoFijoController(MiContexto context)
-        {
+        { //Relaciones del context
             _context = context;
+            _context.usuarios
+                    .Include(u => u.tarjetas)
+                    .Include(u => u.cajas)
+                    .Include(u => u.pf)
+                    .Include(u => u.pagos)
+                    .Load();
+            _context.cajas
+                .Include(c => c.movimientos)
+                .Include(c => c.titulares)
+                .Load();
+            _context.plazosFijos.Load();
+            
         }
 
+        public Usuario usuarioLogeado() //tomar sesion del usuario
+        {
+            if (HttpContext != null)
+            {
+                return _context.usuarios.Where(u => u.id == HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
+            }
+            return null;
+        }
         // GET: PlazoFijo
         public async Task<IActionResult> Index()
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -34,8 +55,8 @@ namespace Final.Controllers
         // GET: PlazoFijo/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -58,8 +79,8 @@ namespace Final.Controllers
         // GET: PlazoFijo/Create
         public IActionResult Create()
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -87,8 +108,8 @@ namespace Final.Controllers
         // GET: PlazoFijo/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -145,8 +166,8 @@ namespace Final.Controllers
         // GET: PlazoFijo/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }

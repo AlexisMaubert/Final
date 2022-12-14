@@ -13,17 +13,35 @@ namespace Final.Controllers
     public class MovimientoController : Controller
     {
         private readonly MiContexto _context;
+        private Usuario uLogeado;
 
         public MovimientoController(MiContexto context)
         {
             _context = context;
+            _context.usuarios
+                    .Include(u => u.tarjetas)
+                    .Include(u => u.cajas)
+                    .Load();
+            _context.cajas
+                .Include(c => c.movimientos)
+                .Include(c => c.titulares)
+                .Load();
+            _context.tarjetas.Load();
+            uLogeado = usuarioLogeado();
         }
-
+        public Usuario usuarioLogeado() //tomar sesion del usuario
+        {
+            if (HttpContext != null)
+            {
+                return _context.usuarios.Where(u => u.id == HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
+            }
+            return null;
+        }
         // GET: Movimiento
         public async Task<IActionResult> Index()
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -34,8 +52,7 @@ namespace Final.Controllers
         // GET: Movimiento/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -58,8 +75,7 @@ namespace Final.Controllers
         // GET: Movimiento/Create
         public IActionResult Create()
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -87,8 +103,7 @@ namespace Final.Controllers
         // GET: Movimiento/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -145,8 +160,7 @@ namespace Final.Controllers
         // GET: Movimiento/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }

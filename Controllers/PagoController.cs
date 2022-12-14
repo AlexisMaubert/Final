@@ -13,17 +13,38 @@ namespace Final.Controllers
     public class PagoController : Controller
     {
         private readonly MiContexto _context;
+        private Usuario uLogeado;
 
         public PagoController(MiContexto context)
-        {
+        { //Relaciones del context
             _context = context;
+            _context.usuarios
+                    .Include(u => u.tarjetas)
+                    .Include(u => u.cajas)
+                    .Include(u => u.pf)
+                    .Include(u => u.pagos)
+                    .Load();
+            _context.cajas
+                .Include(c => c.movimientos)
+                .Include(c => c.titulares)
+                .Load();
+            _context.pagos.Load();
+            _context.tarjetas.Load();
+            
         }
-
+        public Usuario usuarioLogeado() //tomar sesion del usuario
+        {
+            if (HttpContext != null)
+            {
+                return _context.usuarios.Where(u => u.id == HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
+            }
+            return null;
+        }
         // GET: Pago
         public async Task<IActionResult> Index()
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -34,8 +55,8 @@ namespace Final.Controllers
         // GET: Pago/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -58,8 +79,8 @@ namespace Final.Controllers
         // GET: Pago/Create
         public IActionResult Create()
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -87,8 +108,8 @@ namespace Final.Controllers
         // GET: Pago/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -113,6 +134,7 @@ namespace Final.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("id,id_usuario,nombre,monto,pagado,metodo")] Pago pago)
         {
+            uLogeado = usuarioLogeado();
             if (id != pago.id)
             {
                 return NotFound();
@@ -145,8 +167,8 @@ namespace Final.Controllers
         // GET: Pago/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuarioLogeado == null)
+            uLogeado = usuarioLogeado();
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -171,6 +193,7 @@ namespace Final.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            uLogeado = usuarioLogeado();
             if (_context.pagos == null)
             {
                 return Problem("Entity set 'MiContexto.pagos'  is null.");
@@ -184,7 +207,6 @@ namespace Final.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
         private bool PagoExists(int id)
         {
           return _context.pagos.Any(e => e.id == id);

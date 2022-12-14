@@ -1,0 +1,64 @@
+﻿
+@{
+    ViewData["Title"] = "Transferir";
+}
+
+<h1>Depositar</h1>
+
+<h4>CajaDeAhorro</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Transferir">
+            <div class="form-group">
+                <label name="CbuOrigen" class="control-label">Cuenta de Origen</label>
+                <select name="CbuOrigen" class="form-control" >
+                    @foreach (var item in ViewBag.CbuOrigen)
+                    {
+                        <option value="@item.cbu">CBU: @item.cbu ; Saldo: @item.saldo</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label name="CbuDestino" class="control-label">Cuenta Destino (CBU)</label>
+                <input name="CbuDestino" class="form-control"  />
+            </div>
+
+            <div class="form-group">
+                <label name="Monto" class="control-label">Monto a transferir</label>
+                <input name="Monto" class="form-control" />
+            </div>
+            @if (ViewBag.error != null)
+            {
+                @switch (ViewBag.error)
+                {
+                    case (1):
+                        <p class="alert alert-danger">"No se encontró la caja de origen"</p>
+                        break;
+                    case (2):
+                        <p class="alert alert-danger">"No se encontró la caja de destino"</p>
+                        break;
+                    case (3):
+                        <p class="alert alert-danger">"Ingrese un monto correcto"</p>
+                        break;
+                    case (4):
+                        <p class="alert alert-danger">"Saldo insuficiente"</p>
+                        break;
+                }
+            }
+            <div class="form-group">
+                <input type="submit" value="Depositar" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    }

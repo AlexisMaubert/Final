@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Views\CajaDeAhorro\NewFile.txt" />
     <None Remove="Views\Login\NewFile.txt" />
     <None Remove="Views\Main\NewFile.txt" />
   </ItemGroup>
