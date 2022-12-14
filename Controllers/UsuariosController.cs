@@ -22,10 +22,10 @@ namespace Final.Controllers
         // GET: Usuarios
         public async Task<IActionResult> Index()
         {
-            var usuario = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
-            if (usuario == null)
+            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
+            if (usuarioLogeado == null)
             {
-                return  RedirectToAction("Index", "Home");
+                return  RedirectToAction("Index", "Login");
             }
             return View(await _context.usuarios.ToListAsync());
         }
@@ -33,6 +33,11 @@ namespace Final.Controllers
         // GET: Usuarios/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
+            if (usuarioLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
             if (id == null || _context.usuarios == null)
             {
                 return NotFound();
@@ -51,6 +56,11 @@ namespace Final.Controllers
         // GET: Usuarios/Create
         public IActionResult Create()
         {
+            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
+            if (usuarioLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
             return View();
         }
 
@@ -73,6 +83,11 @@ namespace Final.Controllers
         // GET: Usuarios/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
+            if (usuarioLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
             if (id == null || _context.usuarios == null)
             {
                 return NotFound();
@@ -125,6 +140,11 @@ namespace Final.Controllers
         // GET: Usuarios/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
+            if (usuarioLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
             if (id == null || _context.usuarios == null)
             {
                 return NotFound();

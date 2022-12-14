@@ -22,6 +22,11 @@ namespace Final.Controllers
         // GET: PlazoFijo
         public async Task<IActionResult> Index()
         {
+            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
+            if (usuarioLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
             var miContexto = _context.plazosFijos.Include(p => p.titular);
             return View(await miContexto.ToListAsync());
         }
@@ -29,6 +34,11 @@ namespace Final.Controllers
         // GET: PlazoFijo/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
+            if (usuarioLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
             if (id == null || _context.plazosFijos == null)
             {
                 return NotFound();
@@ -48,6 +58,11 @@ namespace Final.Controllers
         // GET: PlazoFijo/Create
         public IActionResult Create()
         {
+            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
+            if (usuarioLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
             ViewData["id_titular"] = new SelectList(_context.usuarios, "id", "apellido");
             return View();
         }
@@ -72,6 +87,11 @@ namespace Final.Controllers
         // GET: PlazoFijo/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
+            if (usuarioLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
             if (id == null || _context.plazosFijos == null)
             {
                 return NotFound();
@@ -125,6 +145,11 @@ namespace Final.Controllers
         // GET: PlazoFijo/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            var usuarioLogeado = _context.usuarios.Where(u => u.dni == HttpContext.Session.GetInt32("UserDni") && u.password == HttpContext.Session.GetString("UserPass")).FirstOrDefault();
+            if (usuarioLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
             if (id == null || _context.plazosFijos == null)
             {
                 return NotFound();

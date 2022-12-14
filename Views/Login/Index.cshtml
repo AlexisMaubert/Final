@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Iniciar sesión";
+}
+
+<div class="titulo-login">
+    <h1>Bienvenido</h1>
+</div>
+<div class="form-login">
+    <h2>Iniciar sesión</h2>
+    <form action="@Url.Action("Index","Login")"  method="post">
+        <input name="Dni" type="number" placeholder="Ingresar DNI" />
+        <input type="password" name="password" placeholder="Ingresar contraseña" />
+        <input type="submit" value="Ingresar">
+        @if (ViewBag.errorLogin != null)
+        {
+            @switch (ViewBag.errorLogin)
+            {
+                case (1):
+                    <p class="alert alert-danger">"No se encontró un usuario con ese DNI"</p>
+                    break;
+                case (2):
+                    <p class="alert alert-danger">"Contraseña incorrecta"</p>
+                    break;
+                case (3):
+                    <p class="alert alert-danger">"Contraseña incorrecta. El usuario está bloqueado"</p>
+                    break;
+                case (4):
+                    <p class="alert alert-danger">"El usuario está bloqueado"</p>
+                    break;
+            }
+        }
+
+    </form>
+    <div class="d-flex justify-content-center">
+        <p>No tenés cuenta?</p>
+        <a asp-controller= "Registro" asp-action="Index">Registrate</a>
+    </div>
+</div>
