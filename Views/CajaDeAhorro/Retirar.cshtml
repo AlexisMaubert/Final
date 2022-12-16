@@ -2,17 +2,18 @@
 
 
 @{
-    ViewData["Title"] = "Depositar";
+    ViewData["Title"] = "Retirar";
 }
 
-<h1>Depositar</h1>
+<h1>Retirar</h1>
 
 <h4>CajaDeAhorro</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Depositar">
-            @if(ViewBag.error != null){
+        <form asp-action="Retirar">
+            @if (ViewBag.error != null)
+            {
                 <p class="alert alert-danger">Ingrese un monto correcto.</p>
             }
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -32,7 +33,7 @@
                 <input name="Monto" class="form-control" />
             </div>
             <div class="form-group">
-                <input type="submit" onClick="alerta()" value="Depositar" class="btn btn-primary" />
+                <input type="submit" value="Retirar" class="btn btn-primary" />
             </div>
         </form>
     </div>

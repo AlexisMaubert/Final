@@ -32,17 +32,8 @@ namespace Final.Controllers
             _context.plazosFijos.Load();
             
         }
-        public Usuario usuarioLogeado() //tomar sesion del usuario
-        {
-            if (HttpContext != null)
-            {
-                return _context.usuarios.Where(u => u.id == HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
-            }
-            return null;
-        }
         public IActionResult Index()
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado != null)
             {
                 return RedirectToAction("Index", "Main");
@@ -84,9 +75,10 @@ namespace Final.Controllers
                     ViewBag.errorLogin = 4;
                     return View();
                 }
+
+                uLogeado = usuario;
+
                 HttpContext.Session.SetInt32("UserId", usuario.id);
-                HttpContext.Session.SetInt32("UserDni", Dni);
-                HttpContext.Session.SetString("UserPass", password);
 
                 if (usuario.isAdmin)
                 {
@@ -106,6 +98,7 @@ namespace Final.Controllers
         }
         public IActionResult Logout()
         {
+            uLogeado = null;
             HttpContext.Session.Clear();
             return RedirectToAction("Index", "Login");
         }

@@ -7,6 +7,9 @@
 <h1>Delete</h1>
 
 <h3>Are you sure you want to delete this?</h3>
+@if(ViewBag.error != null){
+    <p class="alert alert-danger">El plazo fijo debe estar pagado</p>
+}
 <div>
     <h4>PlazoFijo</h4>
     <hr />

@@ -9,9 +9,9 @@ namespace Final.Controllers
     public class RegistroController : Controller
     {
         private readonly MiContexto _context;
-        private Usuario uLogeado;
+        private Usuario? uLogeado;
 
-        public RegistroController(MiContexto context)
+        public RegistroController(MiContexto context, IHttpContextAccessor httpContextAccessor)
         { //Relaciones del context
             _context = context;
             _context.usuarios
@@ -28,20 +28,12 @@ namespace Final.Controllers
             _context.pagos.Load();
             _context.movimientos.Load();
             _context.plazosFijos.Load();
-            
+            uLogeado = _context.usuarios.Where(u => u.id == httpContextAccessor.HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
         }
-        public Usuario usuarioLogeado() //tomar sesion del usuario
-        {
-            if (HttpContext != null)
-            {
-                return _context.usuarios.Where(u => u.id == HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
-            }
-            return null;
-        }
+
         // GET: RegistroController
         public ActionResult Index()
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado != null)
             {
                 return RedirectToAction("Index", "Main");
@@ -52,7 +44,6 @@ namespace Final.Controllers
         [HttpPost]
         public ActionResult Index([Bind("id,dni,nombre,apellido,mail,password")] Usuario usuario)
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado != null)
             {
                 return RedirectToAction("Index", "Main");

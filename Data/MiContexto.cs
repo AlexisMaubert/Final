@@ -186,28 +186,10 @@ namespace Final.Data
 
             modelBuilder.Entity<Usuario>()
             .HasData(
-                new { id=1, dni=40009479, nombre="Franco", apellido="Muzzio", mail="franco.muzzio@davinci.edu.ar", 
+                new { id=1, dni=23391008, nombre="Agustín", apellido= "Giudice", mail= "agustín.giudice@davinci.edu.ar", 
                     password="1234", intentosFallidos=0, bloqueado=false, isAdmin=true },
-                new { id=2, dni=63309307, nombre="Fiorella", apellido="Piñeiro", mail= "fiorella.piñeiro@davinci.edu.ar", 
-                    password="1234", intentosFallidos=0, bloqueado=false, isAdmin=true },
-                new { id=3, dni=32677773, nombre="Magalí", apellido= "Markauskas", mail= "magalí.markauskas@davinci.edu.ar", 
-                    password="1234", intentosFallidos=0, bloqueado=false, isAdmin=true },
-                new { id=4, dni=21035623, nombre="Martín", apellido= "Sassano", mail= "martín.sassano@davinci.edu.ar", 
-                    password="1234", intentosFallidos=0, bloqueado=false, isAdmin=true },
-                new { id=5, dni=23391008, nombre="Agustín", apellido= "Giudice", mail= "agustín.giudice@davinci.edu.ar", 
-                    password="1234", intentosFallidos=0, bloqueado=false, isAdmin=true },
-                new { id=6, dni=45686773, nombre ="Alexis", apellido= "Maubert", mail= "alexis.maubert@davinci.edu.ar", 
-                    password="1234", intentosFallidos=0, bloqueado=false, isAdmin=true },
-                new { id=7, dni=84355987, nombre="Marcos", apellido="Di Marco", mail= "marcos.dimarco@davinci.edu.ar", 
-                    password="1234", intentosFallidos=0, bloqueado=false, isAdmin=false },
-                new { id=8, dni=40563444, nombre="Juliana", apellido="Gutierrez", mail= "juliana.gutierrez@davinci.edu.ar", 
-                    password="1234", intentosFallidos=2, bloqueado=false, isAdmin=false },
-                new { id=9, dni=30447163, nombre="Ariana", apellido="Houseman", mail= "ariana.houseman@davinci.edu.ar", 
-                    password="1234", intentosFallidos=0, bloqueado=false, isAdmin=false },
-                new { id=10, dni=73026363, nombre="Pedro", apellido="Poggi", mail= "pedro.poggi@davinci.edu.ar", 
-                    password="1234", intentosFallidos=1, bloqueado=false, isAdmin=false },
-                new { id=11, dni=39440793, nombre="Lazaro", apellido="Ramirez", mail= "lazaro.ramirez@davinci.edu.ar", 
-                    password="1234", intentosFallidos=0, bloqueado=true, isAdmin=false }
+                new { id=2, dni=36307882, nombre ="Alexis", apellido= "Maubert", mail= "alexis.maubert@davinci.edu.ar", 
+                    password="1234", intentosFallidos=0, bloqueado=false, isAdmin=true }
                 );
         }
 

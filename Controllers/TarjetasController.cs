@@ -14,9 +14,9 @@ namespace Final.Controllers
     public class TarjetasController : Controller
     {
         private readonly MiContexto _context;
-        private Usuario uLogeado;
+        private Usuario? uLogeado;
 
-        public TarjetasController(MiContexto context)
+        public TarjetasController(MiContexto context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _context.usuarios
@@ -28,23 +28,13 @@ namespace Final.Controllers
                 .Include(c => c.titulares)
                 .Load();
             _context.tarjetas.Load();
-            
+            uLogeado = _context.usuarios.Where(u => u.id == httpContextAccessor.HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
 
-        }
-
-        public Usuario usuarioLogeado() //tomar sesion del usuario
-        {
-            if (HttpContext != null)
-            {
-                return _context.usuarios.Where(u => u.id == HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
-            }
-            return null;
         }
 
         // GET: Tarjetas
         public IActionResult Index()
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -53,7 +43,7 @@ namespace Final.Controllers
             {
                 ViewData["Admin"] = "True";
                 var miContexto = _context.tarjetas.Include(t => t.titular);
-                return View( miContexto.ToList());
+                return View(miContexto.ToList());
 
             }
             else
@@ -66,7 +56,6 @@ namespace Final.Controllers
         // GET: Tarjetas/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -90,11 +79,11 @@ namespace Final.Controllers
         // GET: Tarjetas/Create
         public IActionResult Create()
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
+            ViewBag.Admin = uLogeado.isAdmin;
             ViewBag.id_titular = new SelectList(_context.usuarios, "id", "apellido");
             Random random = new();
             int nuevoNumero = random.Next(100000000, 999999999);
@@ -115,18 +104,29 @@ namespace Final.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id,limite,numero,codigoV,consumo")] Tarjeta tarjeta)
+        public async Task<IActionResult> Create([Bind("id,id_titular,limite,numero,codigoV,consumo")] Tarjeta tarjeta)
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
+
             if (ModelState.IsValid)
             {
-                tarjeta.titular = uLogeado;
-                tarjeta.id_titular = uLogeado.id;
-
+                if (uLogeado.isAdmin)
+                {
+                    Usuario usuario = await _context.usuarios.Where(u => u.id == tarjeta.id_titular).FirstOrDefaultAsync();
+                    tarjeta.titular = usuario;
+                    usuario.tarjetas.Add(tarjeta);
+                    _context.Update(usuario);  
+                }
+                else
+                {
+                    tarjeta.titular = uLogeado;
+                    tarjeta.id_titular = uLogeado.id;
+                    uLogeado.tarjetas.Add(tarjeta);
+                    _context.Update(uLogeado);
+                }
                 _context.Add(tarjeta);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -138,7 +138,6 @@ namespace Final.Controllers
         // GET: Tarjetas/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -200,7 +199,6 @@ namespace Final.Controllers
         // GET: Tarjetas/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -231,16 +229,21 @@ namespace Final.Controllers
                 return Problem("Entity set 'MiContexto.tarjetas'  is null.");
             }
             var tarjeta = await _context.tarjetas.FindAsync(id);
-            if (tarjeta != null)
+            if (tarjeta == null)
             {
-                _context.tarjetas.Remove(tarjeta);
+                return NotFound();
             }
-
+            if (tarjeta.consumo != 0)
+            {
+                ViewBag.error = 0;
+                return View(tarjeta);
+            }
+            _context.tarjetas.Remove(tarjeta);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index","Tarjetas");
         }
         // GET: Depositar
-       
+
         private bool TarjetaExists(int id)
         {
             return _context.tarjetas.Any(e => e.id == id);

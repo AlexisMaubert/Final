@@ -5,7 +5,36 @@
 }
 
 <h1>@ViewBag.Nombre</h1>
-
+<h2>    <h2>
+@if(ViewData["success"] != null){
+    @switch(ViewData["success"]){
+        case("1"):
+        <p class="alert alert-success">La caja se creo con éxito</p>
+        break;
+        case("2"):
+        <p class="alert alert-success">La caja se editó con éxito</p>
+        break;
+        case("3"):
+        <p class="alert alert-success">La caja se eliminó correctamente</p>
+        break;
+        case("4"):
+        <p class="alert alert-success">El depósito se realizó con éxito</p>
+        break;
+        case("5"):
+        <p class="alert alert-success">Se retiró el monto deseado correctamente</p>
+        break;
+        case("6"):
+        <p class="alert alert-success">La transferencia se realizó con éxito</p>
+        break;
+        case("7"):
+        <p class="alert alert-success">Se agregó correctamente el titular</p>
+        break;
+        case("8"):
+        <p class="alert alert-success">Se eliminó correctamente el titular</p>
+        break;
+    }
+    
+}
 <p>
     <a asp-action="Create">Crear caja</a>    |    
     <a asp-action="Transferir">Transferir</a>
@@ -38,7 +67,9 @@
                     <a asp-action="Details" asp-route-id="@item.id">Detalles</a> |
                     <a asp-action="Delete" asp-route-id="@item.id">Borrar</a> |
                     <a asp-action="Depositar" asp-route-id="@item.id">Depositar</a>|
-                    <a asp-action="Retirar" asp-route-id="@item.id">Retirar</a>
+                    <a asp-action="Retirar" asp-route-id="@item.id">Retirar</a> |
+                    <a asp-action="AgregarTitular" asp-route-id="@item.id">Agregar Titular</a> |
+                    <a asp-action="EliminarTitular" asp-route-id="@item.id">Eliminar Titular</a>
                 </td>
             </tr>
         }

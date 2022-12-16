@@ -7,15 +7,16 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Final.Data;
 using Final.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace Final.Controllers
 {
     public class PlazoFijoController : Controller
     {
         private readonly MiContexto _context;
-        private Usuario uLogeado;
+        private Usuario? uLogeado;
 
-        public PlazoFijoController(MiContexto context)
+        public PlazoFijoController(MiContexto context, IHttpContextAccessor httpContextAccessor)
         { //Relaciones del context
             _context = context;
             _context.usuarios
@@ -29,33 +30,33 @@ namespace Final.Controllers
                 .Include(c => c.titulares)
                 .Load();
             _context.plazosFijos.Load();
-            
+            uLogeado = _context.usuarios.Where(u => u.id == httpContextAccessor.HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
         }
 
-        public Usuario usuarioLogeado() //tomar sesion del usuario
-        {
-            if (HttpContext != null)
-            {
-                return _context.usuarios.Where(u => u.id == HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
-            }
-            return null;
-        }
         // GET: PlazoFijo
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
-            var miContexto = _context.plazosFijos.Include(p => p.titular);
-            return View(await miContexto.ToListAsync());
+            if (uLogeado.isAdmin)
+            {
+                ViewBag.Admin = true;
+                ViewBag.Nombre = "Administrador: " + uLogeado.nombre + " " + uLogeado.apellido;
+                return View(_context.plazosFijos.ToList());
+            }
+            else
+            {
+                ViewBag.Admin = false;
+                ViewBag.Nombre = uLogeado.nombre + " " + uLogeado.apellido;
+                return View(uLogeado.pf.ToList());
+            }
         }
 
         // GET: PlazoFijo/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -79,12 +80,23 @@ namespace Final.Controllers
         // GET: PlazoFijo/Create
         public IActionResult Create()
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
-            ViewData["id_titular"] = new SelectList(_context.usuarios, "id", "apellido");
+            ViewBag.Admin = uLogeado.isAdmin;
+            if (uLogeado.isAdmin)
+            {
+                ViewBag.cajas = _context.cajas.ToList();
+            }
+            else
+            {
+                ViewBag.cajas = uLogeado.cajas.ToList();
+            }
+            ViewBag.fechaIn = DateTime.Now;
+            ViewBag.fechaFin = DateTime.Now.AddMonths(1);
+            ViewBag.tasa = 90;
+
             return View();
         }
 
@@ -93,14 +105,68 @@ namespace Final.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id,monto,fechaIni,fechaFin,tasa,pagado,id_titular,cbu")] PlazoFijo plazoFijo)
+        public async Task<IActionResult> Create([Bind("id,monto,fechaIni,fechaFin,tasa,id_titular,cbu")] PlazoFijo plazoFijo)
         {
+            if (uLogeado.isAdmin)
+            {
+                ViewBag.cajas = _context.cajas.ToList();
+            }
+            else
+            {
+                ViewBag.cajas = uLogeado.cajas.ToList();
+            }
+            ViewBag.fechaIn = DateTime.Now;
+            ViewBag.fechaFin = DateTime.Now.AddMonths(1);
+            ViewBag.tasa = 90;
+            if (plazoFijo == null)
+            {
+                return NotFound();
+            }
+            if (plazoFijo.monto < 1000)
+            {
+                ViewBag.error = 0;
+                return View();
+            }
+            CajaDeAhorro caja = _context.cajas.FirstOrDefault(c => c.cbu == plazoFijo.cbu);
+            if (caja == null)
+            {
+                return NotFound();
+            }
+            if (caja.saldo < plazoFijo.monto)
+            {
+                ViewBag.error = 1;
+                return View();
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(plazoFijo);
+                if (!uLogeado.isAdmin)
+                {
+                    plazoFijo.id_titular = uLogeado.id;
+                    plazoFijo.titular = uLogeado;
+                    uLogeado.pf.Add(plazoFijo);
+                    _context.Update(uLogeado);
+                }
+                else
+                {
+                    Usuario titular = caja.titulares.ToList().FirstOrDefault();
+                    if (titular == null)
+                    {
+                        ViewBag.error = 2;
+                        return View(plazoFijo);
+                    }
+                    plazoFijo.titular = titular;
+                    titular.pf.Add(plazoFijo);
+                    _context.Update(titular);
+                }
+                caja.saldo -= plazoFijo.monto;
+                altaMovimiento(caja, "Alta plazo fijo", plazoFijo.monto);
+                _context.Update(caja);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["id_titular"] = new SelectList(_context.usuarios, "id", "apellido", plazoFijo.id_titular);
             return View(plazoFijo);
         }
@@ -108,7 +174,6 @@ namespace Final.Controllers
         // GET: PlazoFijo/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -166,7 +231,6 @@ namespace Final.Controllers
         // GET: PlazoFijo/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -197,18 +261,40 @@ namespace Final.Controllers
                 return Problem("Entity set 'MiContexto.plazosFijos'  is null.");
             }
             var plazoFijo = await _context.plazosFijos.FindAsync(id);
-            if (plazoFijo != null)
+            if (plazoFijo == null)
             {
-                _context.plazosFijos.Remove(plazoFijo);
+                return NotFound();
             }
-            
+            if (!plazoFijo.pagado)
+            {
+                ViewBag.error = 0;
+                return View(plazoFijo);
+            }
+            _context.plazosFijos.Remove(plazoFijo);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool PlazoFijoExists(int id)
         {
-          return _context.plazosFijos.Any(e => e.id == id);
+            return _context.plazosFijos.Any(e => e.id == id);
+        }
+
+        public bool altaMovimiento(CajaDeAhorro Caja, string Detalle, float Monto)
+        {
+            try
+            {
+                Movimiento movimientoNuevo = new Movimiento(Caja, Detalle, Monto);
+                _context.movimientos.Add(movimientoNuevo);
+                Caja.movimientos.Add(movimientoNuevo);
+                _context.Update(Caja);
+                _context.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

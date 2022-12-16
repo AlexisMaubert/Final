@@ -49,9 +49,13 @@
                 @Html.DisplayFor(modelItem => item.metodo)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.id">Edit</a> |
+                    @if (ViewBag.Admin == true)
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.id">Editar</a>
+                    } |
                 <a asp-action="Details" asp-route-id="@item.id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.id">Delete</a>
+                <a asp-action="Delete" asp-route-id="@item.id">Delete</a> |
+                    <a asp-action="Pagar" asp-route-id="@item.id">Pagar</a> |
             </td>
         </tr>
 }

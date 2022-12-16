@@ -7,15 +7,16 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Final.Data;
 using Final.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace Final.Controllers
 {
     public class UsuariosController : Controller
     {
         private readonly MiContexto _context;
-        private Usuario ULogeado;
+        private Usuario? uLogeado;
 
-        public UsuariosController(MiContexto context)
+        public UsuariosController(MiContexto context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _context.usuarios
@@ -32,7 +33,7 @@ namespace Final.Controllers
             _context.pagos.Load();
             _context.movimientos.Load();
             _context.plazosFijos.Load();
-            
+            uLogeado = _context.usuarios.Where(u => u.id == httpContextAccessor.HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
 
         }
         public Usuario usuarioLogeado() //tomar sesion del usuario
@@ -46,8 +47,7 @@ namespace Final.Controllers
         // GET: Usuarios
         public async Task<IActionResult> Index()
         {
-            ULogeado = usuarioLogeado();
-            if (ULogeado == null)
+            if (uLogeado == null)
             {
                 return  RedirectToAction("Index", "Login");
             }
@@ -57,8 +57,7 @@ namespace Final.Controllers
         // GET: Usuarios/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            ULogeado = usuarioLogeado();
-            if (ULogeado == null)
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -80,8 +79,7 @@ namespace Final.Controllers
         // GET: Usuarios/Create
         public IActionResult Create()
         {
-            ULogeado = usuarioLogeado();
-            if (ULogeado == null)
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -107,8 +105,7 @@ namespace Final.Controllers
         // GET: Usuarios/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            ULogeado = usuarioLogeado();
-            if (ULogeado == null)
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
@@ -143,7 +140,6 @@ namespace Final.Controllers
                 {
                     _context.Update(usuario);
                     await _context.SaveChangesAsync();
-                    Console.Out.WriteLine("hola soy un debug");
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -164,8 +160,7 @@ namespace Final.Controllers
         // GET: Usuarios/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            ULogeado = usuarioLogeado();
-            if (ULogeado == null)
+            if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }

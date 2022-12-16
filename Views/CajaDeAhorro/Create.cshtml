@@ -17,7 +17,7 @@
                 <input asp-for="cbu" class="form-control" readonly value="@ViewBag.cbu" />
                 <span asp-validation-for="cbu" class="text-danger"></span>
             </div>
-            @if (ViewBag.Admin == "True")
+            @if (ViewBag.Admin == true)
             {
                 <div class="form-group">
                     <label asp-for="saldo" class="control-label"></label>

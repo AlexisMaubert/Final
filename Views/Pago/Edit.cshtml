@@ -15,17 +15,17 @@
             <input type="hidden" asp-for="id" />
             <div class="form-group">
                 <label asp-for="id_usuario" class="control-label"></label>
-                <select asp-for="id_usuario" class="form-control" asp-items="ViewBag.id_usuario"></select>
+                <select asp-for="id_usuario" class="form-control" asp-items="ViewBag.id_usuario" readonly></select>
                 <span asp-validation-for="id_usuario" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="nombre" class="control-label"></label>
-                <input asp-for="nombre" class="form-control" />
+                <input asp-for="nombre" class="form-control" readonly/>
                 <span asp-validation-for="nombre" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="monto" class="control-label"></label>
-                <input asp-for="monto" class="form-control" />
+                <input asp-for="monto" class="form-control" readonly/>
                 <span asp-validation-for="monto" class="text-danger"></span>
             </div>
             <div class="form-group form-check">
@@ -35,7 +35,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="metodo" class="control-label"></label>
-                <input asp-for="metodo" class="form-control" />
+                <input asp-for="metodo" class="form-control" readonly/>
                 <span asp-validation-for="metodo" class="text-danger"></span>
             </div>
             <div class="form-group">

@@ -9,9 +9,9 @@ namespace Final.Controllers
     public class MainController : Controller
     {
         private readonly MiContexto _context;
-        private Usuario uLogeado;
+        private Usuario? uLogeado;
 
-        public MainController(MiContexto context)
+        public MainController(MiContexto context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _context.usuarios
@@ -28,19 +28,11 @@ namespace Final.Controllers
             _context.pagos.Load();
             _context.movimientos.Load();
             _context.plazosFijos.Load();
-        }
-        public Usuario usuarioLogeado() //tomar sesion del usuario
-        {
-            if (HttpContext != null)
-            {
-                return _context.usuarios.Where(u => u.id == HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
-            }
-            return null;
+            uLogeado = _context.usuarios.Where(u => u.id == httpContextAccessor.HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
         }
         // GET: MainController
         public ActionResult Index()
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");

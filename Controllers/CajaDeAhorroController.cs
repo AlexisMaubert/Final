@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Final.Data;
 using Final.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Html;
+using Microsoft.IdentityModel.Protocols;
 
 namespace Final.Controllers
 {
@@ -15,7 +18,7 @@ namespace Final.Controllers
         private readonly MiContexto _context;
         private Usuario uLogeado;
 
-        public CajaDeAhorroController(MiContexto context)
+        public CajaDeAhorroController(MiContexto context, IHttpContextAccessor httpContextAccessor)
         { //Relaciones del context
             _context = context;
             _context.usuarios
@@ -32,20 +35,11 @@ namespace Final.Controllers
             _context.pagos.Load();
             _context.movimientos.Load();
             _context.plazosFijos.Load();
-
-        }
-        public Usuario usuarioLogeado() //tomar sesion del usuario
-        {
-            if (HttpContext != null)
-            {
-                return _context.usuarios.Where(u => u.id == HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
-            }
-            return null;
+            uLogeado = _context.usuarios.Where(u => u.id == httpContextAccessor.HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
         }
         // GET: CajaDeAhorro
         public IActionResult Index()
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -56,17 +50,40 @@ namespace Final.Controllers
                 ViewBag.Nombre = "Administrador: " + uLogeado.nombre + " " + uLogeado.apellido;
                 return View(_context.cajas.ToList());
             }
-            ViewBag.Admin = "False";
-            ViewBag.Nombre = uLogeado.nombre + " " + uLogeado.apellido;
-            return View(uLogeado.cajas.ToList());
-
+            else
+            {
+                ViewBag.Admin = "False";
+                ViewBag.Nombre = uLogeado.nombre + " " + uLogeado.apellido;
+                return View(uLogeado.cajas.ToList());
+            }
+            
+        }
+        [HttpGet]
+        public IActionResult Index(string success)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            ViewBag.success = success;
+            if (uLogeado.isAdmin)
+            {
+                ViewBag.Admin = "True";
+                ViewBag.Nombre = "Administrador: " + uLogeado.nombre + " " + uLogeado.apellido;
+                return View(_context.cajas.ToList());
+            }
+            else
+            {
+                ViewBag.Admin = "False";
+                ViewBag.Nombre = uLogeado.nombre + " " + uLogeado.apellido;
+                return View(uLogeado.cajas.ToList());
+            }
 
         }
 
         // GET: CajaDeAhorro/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -89,11 +106,11 @@ namespace Final.Controllers
         // GET: CajaDeAhorro/Create
         public IActionResult Create()
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
+            ViewBag.Admin = uLogeado.isAdmin;
 
             ViewBag.id_titular = new SelectList(_context.usuarios, "id", "apellido");
             Random random = new();
@@ -118,11 +135,10 @@ namespace Final.Controllers
             if (ModelState.IsValid)
             {
                 _context.Add(cajaDeAhorro);
-                uLogeado = usuarioLogeado();
                 uLogeado.cajas.Add(cajaDeAhorro);
                 cajaDeAhorro.titulares.Add(uLogeado);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index","CajaDeAhorro", new { success = "1" });
             }
             return View(cajaDeAhorro);
         }
@@ -130,7 +146,6 @@ namespace Final.Controllers
         // GET: CajaDeAhorro/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -178,7 +193,7 @@ namespace Final.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index","CajaDeAhorro", new { success = "2" });
             }
             return View(cajaDeAhorro);
         }
@@ -186,7 +201,6 @@ namespace Final.Controllers
         // GET: CajaDeAhorro/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -219,14 +233,13 @@ namespace Final.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "CajaDeAhorro", new { success = "3" });
         }
 
 
         // GET: CajaDeAhorro/Depositar
         public IActionResult Depositar(int? id)
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -236,9 +249,16 @@ namespace Final.Controllers
             {
                 return NotFound();
             }
-
-            var caja = uLogeado.cajas
+            CajaDeAhorro caja;
+            if (uLogeado.isAdmin)
+            {
+                caja = _context.cajas.FirstOrDefault(c => c.id == id);
+            }
+            else
+            {
+                caja = uLogeado.cajas
                 .FirstOrDefault(c => c.id == id);
+            }
             if (caja == null)
             {
                 return NotFound();
@@ -252,7 +272,6 @@ namespace Final.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Depositar(int? id, float Monto)
         {
-            uLogeado = usuarioLogeado();
             CajaDeAhorro caja;
             if (uLogeado.isAdmin)
             {
@@ -271,17 +290,77 @@ namespace Final.Controllers
                 ViewBag.error = 1;
                 return View(caja);
             }
+            altaMovimiento(caja, "Depositar", Monto);
             caja.saldo += Monto;
             _context.Update(caja);
             _context.SaveChanges();
-            return RedirectToAction("Index", "CajaDeAhorro");
+            return RedirectToAction("Index", "CajaDeAhorro", new { success = "4" });
 
         }
 
+        // GET: CajaDeAhorro/Retirar
+        public IActionResult Retirar(int? id)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
+            if (id == null || uLogeado.cajas == null)
+            {
+                return NotFound();
+            }
+
+            CajaDeAhorro caja;
+            if (uLogeado.isAdmin)
+            {
+                caja = _context.cajas.FirstOrDefault(c => c.id == id);
+            }
+            else
+            {
+                caja = uLogeado.cajas
+                .FirstOrDefault(c => c.id == id);
+            }
+            if (caja == null)
+            {
+                return NotFound();
+            }
+
+            return View(caja);
+        }
+
+        // POST: CajaDeAhorro/Retirar
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Retirar(int? id, float Monto)
+        {
+            CajaDeAhorro caja;
+            if (uLogeado.isAdmin)
+            {
+                caja = _context.cajas.FirstOrDefault(C => C.id == id);
+            }
+            else
+            {
+                caja = uLogeado.cajas.FirstOrDefault(C => C.id == id);
+            }
+            if (caja == null)
+            {
+                return NotFound();
+            }
+            if (Monto <= 0)
+            {
+                ViewBag.error = 1;
+                return View(caja);
+            }
+            altaMovimiento(caja, "Retirar", Monto);
+            caja.saldo -= Monto;
+            _context.Update(caja);
+            _context.SaveChanges();
+            return RedirectToAction("Index", "CajaDeAhorro", new { success = "5" });
+        }
 
         public IActionResult Transferir()
         {
-            uLogeado = usuarioLogeado();
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
@@ -294,7 +373,6 @@ namespace Final.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Transferir(int CbuOrigen, int CbuDestino, float Monto)
         {
-            uLogeado = usuarioLogeado();
             CajaDeAhorro cajaMia = uLogeado.cajas.FirstOrDefault(c => c.cbu == CbuOrigen);
             CajaDeAhorro cajaDestino = _context.cajas.FirstOrDefault(c => c.cbu == CbuDestino);
             if (cajaMia == null)
@@ -319,19 +397,177 @@ namespace Final.Controllers
             }
             cajaMia.saldo -= Monto;
             cajaDestino.saldo += Monto;
+            altaMovimiento(cajaMia, "Transferencia", Monto);
+            altaMovimiento(cajaDestino, "Transferencia Recibida", Monto);
             _context.Update(cajaMia);
             _context.Update(cajaDestino);
             _context.SaveChanges();
 
-            return RedirectToAction("index", "CajaDeAhorro");
+            return RedirectToAction("Index", "CajaDeAhorro", new { success = "6" });
         }
 
+        // GET: CajaDeAhorro/AgregarTitular
+        public async Task<IActionResult> AgregarTitular(int? id)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            if (id == null || _context.cajas == null)
+            {
+                return NotFound();
+            }
+            CajaDeAhorro caja;
+            if (uLogeado.isAdmin)
+            {
+                caja = _context.cajas.FirstOrDefault(C => C.id == id);
+                ViewBag.usuarios = await _context.usuarios.ToListAsync();
+            }
+            else
+            {
+                caja = uLogeado.cajas.FirstOrDefault(C => C.id == id);
+            }
+            ViewBag.Titulares = caja.titulares;
+            ViewBag.Admin = uLogeado.isAdmin;
+            return View(caja);
+        }
 
+        // POST: CajaDeAhorro/AgregarTitular
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult AgregarTitular(int id, int idUsuario)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
+            CajaDeAhorro caja;
+            Usuario usuario;
+            if (uLogeado.isAdmin)
+            {
+                caja = _context.cajas.FirstOrDefault(C => C.id == id);
+                usuario = _context.usuarios.FirstOrDefault(C => C.id == idUsuario);
+            }
+            else
+            {
+                caja = uLogeado.cajas.FirstOrDefault(C => C.id == id);
+                usuario = _context.usuarios.FirstOrDefault(C => C.dni == idUsuario);
+            }
+            if (caja == null)
+            {
+                return NotFound();
+            }
+            if (usuario == null)
+            {
+                ViewBag.error = 1;
+                return View(caja);
+            }
+            if (caja.titulares.Contains(usuario))
+            {
+                ViewBag.error = 2;
+                return View(caja);
+            }
+            ViewBag.Titulares = caja.titulares;
+            ViewBag.Admin = uLogeado.isAdmin;
+            caja.titulares.Add(usuario);
+            usuario.cajas.Add(caja);
+            _context.Update(usuario);
+            _context.Update(caja);
+            _context.SaveChanges();
+
+            return RedirectToAction("Index", "CajaDeAhorro", new { success = "7" });
+        }
+
+        public IActionResult EliminarTitular(int? id)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            if (id == null || _context.cajas == null)
+            {
+                return NotFound();
+            }
+            CajaDeAhorro caja;
+            if (uLogeado.isAdmin)
+            {
+                caja = _context.cajas.FirstOrDefault(C => C.id == id);
+            }
+            else
+            {
+                caja = uLogeado.cajas.FirstOrDefault(C => C.id == id);
+            }
+            ViewBag.Titulares = caja.titulares;
+            ViewBag.Admin = uLogeado.isAdmin;
+            return View(caja);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EliminarTitular(int id, int idUsuario)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
+            CajaDeAhorro caja;
+            Usuario usuario;
+            if (uLogeado.isAdmin)
+            {
+                caja = _context.cajas.FirstOrDefault(C => C.id == id);
+                usuario = _context.usuarios.FirstOrDefault(C => C.id == idUsuario);
+
+            }
+            else
+            {
+                caja = uLogeado.cajas.FirstOrDefault(C => C.id == id);
+                usuario = _context.usuarios.FirstOrDefault(C => C.id == idUsuario);
+            }
+            if (caja == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.Titulares = caja.titulares;
+            if (caja.titulares.Count() == 1)
+            {
+                ViewBag.error = 1;
+                return View(caja);
+            }
+            caja.titulares.Remove(usuario);
+            usuario.cajas.Remove(caja);
+            _context.Update(usuario);
+            _context.Update(caja);
+            _context.SaveChanges();
+
+            return RedirectToAction("Index", "CajaDeAhorro", new { succes = "8" });
+        }
         private bool CajaDeAhorroExists(int id)
         {
             return _context.cajas.Any(e => e.id == id);
         }
+        /*
+         * *
+         * *MOVIMIENTOS
+         * *
+         */
 
-
+        public bool altaMovimiento(CajaDeAhorro Caja, string Detalle, float Monto)
+        {
+            try
+            {
+                Movimiento movimientoNuevo = new Movimiento(Caja, Detalle, Monto);
+                _context.movimientos.Add(movimientoNuevo);
+                Caja.movimientos.Add(movimientoNuevo);
+                _context.Update(Caja);
+                _context.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }
