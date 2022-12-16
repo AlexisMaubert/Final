@@ -41,27 +41,5 @@ namespace Final.Controllers
             return View(await miContexto.ToListAsync());
         }
 
-        // GET: Movimiento/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (uLogeado == null)
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            if (id == null || _context.movimientos == null)
-            {
-                return NotFound();
-            }
-
-            var movimiento = await _context.movimientos
-                .Include(m => m.caja)
-                .FirstOrDefaultAsync(m => m.id == id);
-            if (movimiento == null)
-            {
-                return NotFound();
-            }
-
-            return View(movimiento);
-        }
     }
 }

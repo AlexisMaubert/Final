@@ -51,7 +51,7 @@ namespace Final.Controllers
             ViewBag.logeado = "no";
             if (_context.usuarios.Any(us => us.dni == usuario.dni))
             {
-                ViewBag.error = "Ya existe un usuario con este DNI";
+                ViewBag.error = 0;
                 return View();
             }
             if (ModelState.IsValid)

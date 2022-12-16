@@ -18,17 +18,17 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="id" />
             <div class="form-group">
-                <label asp-for="cbu" class="control-label"></label>
+                <label asp-for="cbu" class="control-label">CBU</label>
                 <input asp-for="cbu" class="form-control" readonly />
                 <span asp-validation-for="cbu" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="saldo" class="control-label"></label>
+                <label asp-for="saldo" class="control-label">Saldo</label>
                 <input asp-for="saldo" class="form-control" readonly />
                 <span asp-validation-for="saldo" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label name="Monto" class="control-label"></label>
+                <label name="Monto" class="control-label">Monto</label>
                 <input name="Monto" class="form-control" />
             </div>
             <div class="form-group">
@@ -39,7 +39,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Volver</a>
 </div>
 
 @section Scripts {

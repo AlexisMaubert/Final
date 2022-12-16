@@ -17,38 +17,37 @@
             }
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label name="CbuOrigen" class="control-label">Cuenta de Origen</label>
-                <select name="CbuOrigen" class="form-control">
-                    @foreach (var item in ViewBag.CbuOrigen)
+                <label name="idMetodoDePago" class="control-label">Método de pago</label>
+                <select name="idMetodoDePago" class="form-control">
+                    @foreach (var item in ViewBag.cajas)
                     {
-                        <option value="@item.cbu">CBU: @item.cbu ; Saldo: @item.saldo</option>
+                        <option value="@item.id">CBU: @item.cbu | Saldo: @item.saldo</option>
+                    }
+                    @foreach (var item in ViewBag.tarjetas)
+                    {
+                        <option value="@item.id">Numero: @item.numero | Limite: @item.limite | Consumo: @item.consumo</option>
                     }
                 </select>
             </div>
             <div class="form-group">
-                <label asp-for="nombre" class="control-label"></label>
-                <input asp-for="nombre" class="form-control" />
+                <label asp-for="nombre" class="control-label">Nombre</label>
+                <input asp-for="nombre" class="form-control" readonly/>
                 <span asp-validation-for="nombre" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="monto" class="control-label"></label>
-                <input asp-for="monto" class="form-control" />
+                <label asp-for="monto" class="control-label">Monto</label>
+                <input asp-for="monto" class="form-control" readonly />
                 <span asp-validation-for="monto" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="metodo" class="control-label"></label>
-                <input asp-for="metodo" class="form-control" />
-                <span asp-validation-for="metodo" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Pagar" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Volver</a>
 </div>
 
 @section Scripts {

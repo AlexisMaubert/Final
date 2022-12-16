@@ -1,13 +1,28 @@
 ﻿@model IEnumerable<Final.Models.Pago>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Pagos";
 }
 
-<h1>Index</h1>
-
+<h1>Pagos</h1>
+@if(ViewData["success"] != null){
+    @switch(ViewData["success"]){
+        case("1"):
+        <p class="alert alert-success">El pago se creo con éxito</p>
+        break;
+        case("2"):
+        <p class="alert alert-success">El pago se editó con éxito</p>
+        break;
+        case("3"):
+        <p class="alert alert-success">El pago se eliminó correctamente</p>
+        break;
+        case("4"):
+        <p class="alert alert-success">El pago fue pagado con éxito</p>
+        break;
+    }
+}
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Crear Pago</a>
 </p>
 <table class="table">
     <thead>
@@ -53,8 +68,8 @@
                     {
                         <a asp-action="Edit" asp-route-id="@item.id">Editar</a>
                     } |
-                <a asp-action="Details" asp-route-id="@item.id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.id">Delete</a> |
+                <a asp-action="Details" asp-route-id="@item.id">Detalles</a> |
+                <a asp-action="Delete" asp-route-id="@item.id">Eliminar</a> |
                     <a asp-action="Pagar" asp-route-id="@item.id">Pagar</a> |
             </td>
         </tr>

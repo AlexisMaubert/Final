@@ -1,13 +1,13 @@
 ﻿@model IEnumerable<Final.Models.Tarjeta>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Tarjetas";
 }
 
-<h1>Index</h1>
+<h1>Tarjetas</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Nueva tarjeta</a>
 </p>
 <table class="table">
     <thead>
@@ -51,10 +51,10 @@
             <td>
                 @if (ViewData["Admin"] == "True")
                 {
-                    <a asp-action="Edit" asp-route-id="@item.id">Edit</a> 
+                    <a asp-action="Edit" asp-route-id="@item.id">Editar</a> 
                 }
-                <a asp-action="Details" asp-route-id="@item.id">Details</a> 
-                <a asp-action="Delete" asp-route-id="@item.id">Delete</a>
+                <a asp-action="Details" asp-route-id="@item.id">Detalles</a> 
+                <a asp-action="Delete" asp-route-id="@item.id">Eliminar</a>
             </td>
         </tr>
 }

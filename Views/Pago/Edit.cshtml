@@ -1,10 +1,10 @@
 ﻿@model Final.Models.Pago
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar";
 }
 
-<h1>Edit</h1>
+<h1>Editar</h1>
 
 <h4>Pago</h4>
 <hr />
@@ -14,17 +14,17 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="id" />
             <div class="form-group">
-                <label asp-for="id_usuario" class="control-label"></label>
+                <label asp-for="id_usuario" class="control-label">Usuario</label>
                 <select asp-for="id_usuario" class="form-control" asp-items="ViewBag.id_usuario" readonly></select>
                 <span asp-validation-for="id_usuario" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="nombre" class="control-label"></label>
+                <label asp-for="nombre" class="control-label">Nombre</label>
                 <input asp-for="nombre" class="form-control" readonly/>
                 <span asp-validation-for="nombre" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="monto" class="control-label"></label>
+                <label asp-for="monto" class="control-label">Monto</label>
                 <input asp-for="monto" class="form-control" readonly/>
                 <span asp-validation-for="monto" class="text-danger"></span>
             </div>
@@ -39,14 +39,14 @@
                 <span asp-validation-for="metodo" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Guardar" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Guardar</a>
 </div>
 
 @section Scripts {

@@ -10,7 +10,7 @@
     <a asp-controller="Tarjetas" asp-action="Index">Tarjetas</a>
     <a asp-controller="PlazoFijo" asp-action="Index">Plazos fijo</a>
     <a asp-controller="Pago" asp-action="Index">Pagos</a>
-    @if(ViewBag.Admin == "True")
+    @if(ViewBag.Admin == true)
     {
         <a asp-controller="Usuarios" asp-action="Index">Usuarios</a> 
     }

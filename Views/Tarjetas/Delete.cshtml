@@ -1,12 +1,12 @@
 ﻿@model Final.Models.Tarjeta
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Eliminar";
 }
 
-<h1>Delete</h1>
+<h1>Eliminar</h1>
 
-<h3>Are you sure you want to delete this?</h3>
+<h3>Está seguro que desea eliminar esta tarjeta?</h3>
 @if(ViewBag.error != null){
     <p class="alert alert-danger">El consumo debe ser 0</p>
 }
@@ -48,7 +48,7 @@
     
     <form asp-action="Delete">
         <input type="hidden" asp-for="id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <input type="submit" value="Eliminar" class="btn btn-danger" /> |
+        <a asp-action="Index">Volver</a>
     </form>
 </div>

@@ -1,12 +1,16 @@
 ﻿@model Final.Models.CajaDeAhorro
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Eliminar";
 }
 
-<h1>Delete</h1>
+<h1>Eliminar</h1>
 
-<h3>Are you sure you want to delete this?</h3>
+<h3>Estás seguro de que querés eliminar la caja de ahorro?</h3>
+@if (ViewBag.error != null)
+{
+    <p class="alert alert-danger">El saldo debe de ser 0</p>
+}
 <div>
     <h4>CajaDeAhorro</h4>
     <hr />
@@ -27,7 +31,7 @@
     
     <form asp-action="Delete">
         <input type="hidden" asp-for="id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <input type="submit" value="Eliminar" class="btn btn-danger" /> |
+        <a asp-action="Index">Volver</a>
     </form>
 </div>

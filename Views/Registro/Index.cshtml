@@ -14,9 +14,9 @@
         <input type="password" name="password" placeholder="Ingresar contraseña" />
         @if (ViewBag.error != null)
         {
-            <p class="alert alert-danger">@ViewBag.error </p>
+            <p class="alert alert-danger">Ya existe un usuario con este DNI </p>
         }
         <input type="submit" value="Registrarse">
     </form>
-    <a asp-controller="Login" asp-action="Index">Volver atras</a>
+    <a asp-controller="Login" asp-action="Index">Volver</a>
 </div>

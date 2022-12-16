@@ -46,13 +46,13 @@ namespace Final.Controllers
             }
             if (uLogeado.isAdmin)
             {
-                ViewBag.Admin = "True";
+                ViewBag.Admin = true;
                 ViewBag.Nombre = "Administrador: " + uLogeado.nombre + " " + uLogeado.apellido;
                 return View(_context.cajas.ToList());
             }
             else
             {
-                ViewBag.Admin = "False";
+                ViewBag.Admin = false;
                 ViewBag.Nombre = uLogeado.nombre + " " + uLogeado.apellido;
                 return View(uLogeado.cajas.ToList());
             }
@@ -68,13 +68,13 @@ namespace Final.Controllers
             ViewBag.success = success;
             if (uLogeado.isAdmin)
             {
-                ViewBag.Admin = "True";
+                ViewBag.Admin = true;
                 ViewBag.Nombre = "Administrador: " + uLogeado.nombre + " " + uLogeado.apellido;
                 return View(_context.cajas.ToList());
             }
             else
             {
-                ViewBag.Admin = "False";
+                ViewBag.Admin = false;
                 ViewBag.Nombre = uLogeado.nombre + " " + uLogeado.apellido;
                 return View(uLogeado.cajas.ToList());
             }
@@ -227,11 +227,16 @@ namespace Final.Controllers
                 return Problem("Entity set 'MiContexto.cajas'  is null.");
             }
             var cajaDeAhorro = await _context.cajas.FindAsync(id);
-            if (cajaDeAhorro != null)
+            if (cajaDeAhorro == null)
             {
-                _context.cajas.Remove(cajaDeAhorro);
+                return NotFound();
             }
-
+            if (cajaDeAhorro.saldo != 0)
+            {
+                ViewBag.error = 0;
+                return View(cajaDeAhorro);
+            }
+            _context.cajas.Remove(cajaDeAhorro);
             await _context.SaveChangesAsync();
             return RedirectToAction("Index", "CajaDeAhorro", new { success = "3" });
         }

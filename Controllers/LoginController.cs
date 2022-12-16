@@ -80,14 +80,6 @@ namespace Final.Controllers
 
                 HttpContext.Session.SetInt32("UserId", usuario.id);
 
-                if (usuario.isAdmin)
-                {
-                    ViewData["Admin"] = "True";
-                }
-                else
-                {
-                    ViewData["Admin"] = "False";
-                }
                 return RedirectToAction("Index", "Main");
             }
             catch

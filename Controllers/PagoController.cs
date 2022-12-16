@@ -9,6 +9,7 @@ using Final.Data;
 using Final.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.DotNet.Scaffolding.Shared.CodeModifier.CodeChange;
 
 namespace Final.Controllers
 {
@@ -33,7 +34,6 @@ namespace Final.Controllers
             _context.pagos.Load();
             _context.tarjetas.Load();
             uLogeado = _context.usuarios.Where(u => u.id == httpContextAccessor.HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
-
         }
         // GET: Pago
         public IActionResult Index()
@@ -44,14 +44,34 @@ namespace Final.Controllers
             }
             if (uLogeado.isAdmin)
             {
-                ViewData["Admin"] = "True";
+                ViewBag.Admin = true;
                 return View(_context.pagos.ToList());
             }
             else
             {
-                ViewData["Admin"] = "False";
+                ViewBag.Admin = false;
                 return View(uLogeado.pagos.ToList());
             }
+        }
+        [HttpGet]
+        public IActionResult Index(string success)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            ViewBag.success = success;
+            if (uLogeado.isAdmin)
+            {
+                ViewBag.Admin = true;
+                return View(_context.pagos.ToList());
+            }
+            else
+            {
+                ViewBag.Admin = false;
+                return View(uLogeado.pagos.ToList());
+            }
+
         }
 
         // GET: Pago/Details/5
@@ -94,7 +114,7 @@ namespace Final.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id,id_usuario,nombre,monto,pagado,metodo")] Pago pago)
+        public async Task<IActionResult> Create([Bind("id,id_usuario,nombre,monto,pagado")] Pago pago)
         {
             if (uLogeado == null)
             {
@@ -118,13 +138,13 @@ namespace Final.Controllers
             }
             if (ModelState.IsValid)
             {
-
+                pago.metodo = "No pagado";
                 pago.usuario = titular;
                 _context.Add(pago);
                 titular.pagos.Add(pago);
                 _context.Update(titular);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Index", "Pago");
+                return RedirectToAction("Index", "Pago", new { success = 1 });
             }
             return View(pago);
         }
@@ -185,7 +205,7 @@ namespace Final.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Pago", new { success = 2 });
             }
             ViewData["id_usuario"] = new SelectList(_context.usuarios, "id", "apellido", pago.id_usuario);
             return View(pago);
@@ -254,7 +274,7 @@ namespace Final.Controllers
             }
             _context.pagos.Remove(pago);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("index", "Pago", new { success = 3 });
 
         }
         //Get Pagar
@@ -288,12 +308,12 @@ namespace Final.Controllers
             {
                 return NotFound();
             }
-            
+
             return View(pago);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Pagar(int id, string metodo, int idMetodoDePago)
+        public async Task<IActionResult> Pagar(int id, int idMetodoDePago)
         {
             if (_context.pagos == null)
             {
@@ -304,31 +324,65 @@ namespace Final.Controllers
             {
                 return NotFound();
             }
-            CajaDeAhorro caja =await  _context.cajas.Where(c => c.id == idMetodoDePago).FirstOrDefaultAsync();
             if (pago.pagado)
             {
                 ViewBag.error = 0;
                 return View(pago);
             }
-            if(caja == null)
+            CajaDeAhorro caja = await _context.cajas.Where(c => c.id == idMetodoDePago).FirstOrDefaultAsync();
+            if (caja != null)
             {
-                ViewBag.error = 1;
-                return View(pago);
+                if (caja.saldo < pago.monto)
+                {
+                    ViewBag.error = 1;
+                    return View(pago);
+                }
+                pago.metodo = "Transferencia";
+                altaMovimiento(caja, pago.nombre, pago.monto);
+                caja.saldo -= pago.monto;
+                _context.Update(caja);
             }
-            if(caja.saldo < pago.monto)
+            else
             {
-
+                Tarjeta tarjeta = await _context.tarjetas.Where(c => c.id == idMetodoDePago).FirstOrDefaultAsync();
+                if (tarjeta == null)
+                {
+                    return NotFound();
+                }
+                float disponible = tarjeta.limite - tarjeta.consumo;
+                if (disponible < pago.monto)
+                {
+                    ViewBag.error = 2;
+                    return View(pago);
+                }
+                pago.metodo = "Tarjeta";
+                tarjeta.consumo += pago.monto;
+                _context.Update(caja);
             }
             pago.pagado = true;
-            pago.metodo = metodo;
             _context.Update(pago);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-
+            return RedirectToAction("Index", "Pago", new { success = 4 });
         }
         private bool PagoExists(int id)
         {
             return _context.pagos.Any(e => e.id == id);
+        }
+        public bool altaMovimiento(CajaDeAhorro Caja, string Detalle, float Monto)
+        {
+            try
+            {
+                Movimiento movimientoNuevo = new Movimiento(Caja, Detalle, Monto);
+                _context.movimientos.Add(movimientoNuevo);
+                Caja.movimientos.Add(movimientoNuevo);
+                _context.Update(Caja);
+                _context.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

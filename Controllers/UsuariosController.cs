@@ -51,6 +51,10 @@ namespace Final.Controllers
             {
                 return  RedirectToAction("Index", "Login");
             }
+            if (!uLogeado.isAdmin)
+            {
+                return RedirectToAction("Index", "Main");
+            }
             return View(await _context.usuarios.ToListAsync());
         }
 
@@ -60,6 +64,10 @@ namespace Final.Controllers
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
+            }
+            if (!uLogeado.isAdmin)
+            {
+                return RedirectToAction("Index", "Main");
             }
             if (id == null || _context.usuarios == null)
             {
@@ -76,86 +84,6 @@ namespace Final.Controllers
             return View(usuario);
         }
 
-        // GET: Usuarios/Create
-        public IActionResult Create()
-        {
-            if (uLogeado == null)
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            return View();
-        }
-
-        // POST: Usuarios/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id,dni,nombre,apellido,mail,intentosFallidos,bloqueado,password,isAdmin")] Usuario usuario)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(usuario);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(usuario);
-        }
-
-        // GET: Usuarios/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (uLogeado == null)
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            if (id == null || _context.usuarios == null)
-            {
-                return NotFound();
-            }
-
-            var usuario = await _context.usuarios.FindAsync(id);
-            if (usuario == null)
-            {
-                return NotFound();
-            }
-            return View(usuario);
-        }
-
-        // POST: Usuarios/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id,dni,nombre,apellido,mail,intentosFallidos,bloqueado,password,isAdmin")] Usuario usuario)
-        {
-            if (id != usuario.id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(usuario);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UsuarioExists(usuario.id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(usuario);
-        }
 
         // GET: Usuarios/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -163,6 +91,10 @@ namespace Final.Controllers
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
+            }
+            if (!uLogeado.isAdmin)
+            {
+                return RedirectToAction("Index", "Main");
             }
             if (id == null || _context.usuarios == null)
             {
@@ -187,6 +119,10 @@ namespace Final.Controllers
             {
                 return Problem("Entity set 'MiContexto.usuarios'  is null.");
             }
+            if (!uLogeado.isAdmin)
+            {
+                return RedirectToAction("Index", "Main");
+            }
             var usuario = await _context.usuarios.FindAsync(id);
             if (usuario != null)
             {
@@ -197,9 +133,5 @@ namespace Final.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool UsuarioExists(int id)
-        {
-          return _context.usuarios.Any(e => e.id == id);
-        }
     }
 }

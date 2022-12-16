@@ -171,62 +171,6 @@ namespace Final.Controllers
             return View(plazoFijo);
         }
 
-        // GET: PlazoFijo/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (uLogeado == null)
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            if (id == null || _context.plazosFijos == null)
-            {
-                return NotFound();
-            }
-
-            var plazoFijo = await _context.plazosFijos.FindAsync(id);
-            if (plazoFijo == null)
-            {
-                return NotFound();
-            }
-            ViewData["id_titular"] = new SelectList(_context.usuarios, "id", "apellido", plazoFijo.id_titular);
-            return View(plazoFijo);
-        }
-
-        // POST: PlazoFijo/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id,monto,fechaIni,fechaFin,tasa,pagado,id_titular,cbu")] PlazoFijo plazoFijo)
-        {
-            if (id != plazoFijo.id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(plazoFijo);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!PlazoFijoExists(plazoFijo.id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["id_titular"] = new SelectList(_context.usuarios, "id", "apellido", plazoFijo.id_titular);
-            return View(plazoFijo);
-        }
 
         // GET: PlazoFijo/Delete/5
         public async Task<IActionResult> Delete(int? id)

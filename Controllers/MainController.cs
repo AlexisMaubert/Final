@@ -39,7 +39,7 @@ namespace Final.Controllers
             }
             if (uLogeado.isAdmin)
             {
-                ViewBag.Admin = "True";
+                ViewBag.Admin = true;
             }
             return View();
         }
