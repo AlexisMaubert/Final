@@ -5,7 +5,18 @@
 }
 
 <h1>Index</h1>
-
+@if (ViewBag.success != null)
+{
+    @switch (ViewBag.success)
+    {
+        case (1):
+            <p class="alert alert-success">Se cambió el estado de bloqueado con éxito</p>
+            break;
+        case (2):
+            <p class="alert alert-success">Se cambiaron los permisos del usuario</p>
+            break;
+    }
+}
 <p>
     <a asp-action="Create">Create New</a>
 </p>
@@ -40,38 +51,55 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.dni)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.nombre)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.apellido)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.mail)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.intentosFallidos)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.bloqueado)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.password)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.isAdmin)
-            </td>
-            <td>
-   
-                <a asp-action="Details" asp-route-id="@item.id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.dni)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.nombre)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.apellido)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.mail)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.intentosFallidos)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.bloqueado)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.password)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.isAdmin)
+                </td>
+                <td>
+
+                    @if (item.isAdmin == true)
+                    {
+                        <a asp-action="Admin" asp-route-id="@item.id">Quitar rol Administrador</a>
+                    }
+                    else
+                    {
+                        <a asp-action="Admin" asp-route-id="@item.id">Hacer Administrador</a>
+                    }|
+                    @if (item.bloqueado == true)
+                    {
+                        <a asp-action="Bloquear" asp-route-id="@item.id">Desbloquear</a>
+                    }
+                    else
+                    {
+                        <a asp-action="Bloquear" asp-route-id="@item.id">Bloquear</a>
+                    }|
+                    <a asp-action="Details" asp-route-id="@item.id">Detalles</a> |
+                    <a asp-action="Delete" asp-route-id="@item.id">Eliminar</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

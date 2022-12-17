@@ -31,6 +31,7 @@ namespace Final.Controllers
                 .Load();
             _context.plazosFijos.Load();
             uLogeado = _context.usuarios.Where(u => u.id == httpContextAccessor.HttpContext.Session.GetInt32("UserId")).FirstOrDefault();
+            _context.plazosFijos.ForEachAsync(pf => Pagar(pf));
         }
 
         // GET: PlazoFijo
@@ -185,7 +186,7 @@ namespace Final.Controllers
                 altaMovimiento(caja, "Alta plazo fijo", plazoFijo.monto);
                 _context.Update(caja);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Index","PlazoFijo", new {success = 1});
+                return RedirectToAction("Index", "PlazoFijo", new { success = 1 });
             }
 
             ViewData["id_titular"] = new SelectList(_context.usuarios, "id", "apellido", plazoFijo.id_titular);
@@ -238,6 +239,27 @@ namespace Final.Controllers
             _context.plazosFijos.Remove(plazoFijo);
             await _context.SaveChangesAsync();
             return RedirectToAction("Index", "PlazoFijo", new { success = 2 });
+        }
+
+        public async void Pagar(PlazoFijo pf)
+        {
+            DateTime fechaIni = pf.fechaIni;
+            DateTime fechaFin = pf.fechaFin;
+
+            if (DateTime.Now.CompareTo(fechaFin) <= 0 && pf.pagado == false)
+            {
+                double cantDias = (fechaFin - fechaIni).TotalDays;
+                float montoFinal = (pf.monto + pf.monto * (float)(90.0 / 365.0) * (float)cantDias);
+                decimal bar = Convert.ToDecimal(montoFinal);
+                montoFinal = (float)Math.Round(bar, 2);//redondeo a 2 decimales
+                CajaDeAhorro caja = _context.cajas.Where(c => c.cbu == pf.cbu).FirstOrDefault();
+                caja.saldo += montoFinal;
+                pf.pagado = true;
+                _context.Update(caja);
+                _context.Update(pf);
+                await _context.SaveChangesAsync();
+                altaMovimiento(caja, "Pago plazoFijo", montoFinal);
+            }
         }
 
         private bool PlazoFijoExists(int id)

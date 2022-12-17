@@ -1,0 +1,60 @@
+﻿@model IEnumerable<Final.Models.Movimiento>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+<h1>Movimientos</h1>
+<div class="col-md-4">
+<form asp-action="Movimientos">
+    <input type="hidden" name="id_caja" value=@ViewBag.Id_caja />
+    <div class="form-group">
+                <label name="Detalle" class="control-label">Detalle</label>
+                <input name="Detalle"  type="text" class="form-control" />
+           </div>
+   <div class="form-group">
+                <label name="Monto" class="control-label">Monto</label>
+                <input name="Monto" type=number class="form-control" />
+           </div>
+           <div class="form-group">
+                <label name="Fecha"  class="control-label">Fecha</label>
+                <input name="Fecha" type=date class="form-control" />
+           </div>
+           <div class="form-group">
+                <input type="submit" value="Filtrar" class="btn btn-primary" />
+            </div>
+</form>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.detalle)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.monto)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.fecha)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.detalle)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.monto)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.fecha)
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

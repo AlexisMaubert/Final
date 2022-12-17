@@ -18,6 +18,18 @@
                 }
             }
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @if (ViewBag.Admin == true)
+            {
+                <div class="form-group">
+                    <label name="id_titular" class="control-label">Cajas de Ahorro</label>
+                    <select name="id_titular" class="form-control">
+                        @foreach (var item in ViewBag.titulares)
+                        {
+                            <option value="@item.id">caja: @item.nombre @item.apellido | @item.dni</option>
+                        }
+                    </select>
+                </div>
+            }
             <div class="form-group">
                 <label asp-for="cbu" class="control-label">CBU</label>
                 <input asp-for="cbu" class="form-control" readonly value="@ViewBag.cbu" />

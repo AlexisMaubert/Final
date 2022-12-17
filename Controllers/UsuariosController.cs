@@ -55,6 +55,22 @@ namespace Final.Controllers
             {
                 return RedirectToAction("Index", "Main");
             }
+            ViewBag.Admin = uLogeado.isAdmin;
+            return View(await _context.usuarios.ToListAsync());
+        }
+        [HttpGet]
+        public async Task<IActionResult> Index(int success)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            if (!uLogeado.isAdmin)
+            {
+                return RedirectToAction("Index", "Main");
+            }
+            ViewBag.success = success;
+            ViewBag.Admin = uLogeado.isAdmin;
             return View(await _context.usuarios.ToListAsync());
         }
 
@@ -131,6 +147,43 @@ namespace Final.Controllers
             
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult Bloquear(int id) 
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            if (!uLogeado.isAdmin)
+            {
+                return RedirectToAction("Index", "Main");
+            }
+            Usuario usuario = _context.usuarios.FirstOrDefault(u => u.id == id);
+
+            usuario.bloqueado = !usuario.bloqueado;
+            _context.Update(usuario);
+            _context.SaveChanges();
+
+            return RedirectToAction("Index", "Usuarios", new { success = 1});
+        }
+        public IActionResult Admin(int id)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            if (!uLogeado.isAdmin)
+            {
+                return RedirectToAction("Index", "Main");
+            }
+            Usuario usuario = _context.usuarios.FirstOrDefault(u => u.id == id);
+
+            usuario.isAdmin = !usuario.isAdmin;
+            _context.Update(usuario);
+            _context.SaveChanges();
+
+            return RedirectToAction("Index", "Usuarios", new { success = 2 });
         }
 
     }

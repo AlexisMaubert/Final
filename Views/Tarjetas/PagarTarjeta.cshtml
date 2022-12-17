@@ -13,17 +13,27 @@
         <form asp-action="PagarTarjeta">
             @if (ViewBag.error != null)
             {
-               <p class="alert alert-danger">El saldo de la caja no es suficiente</p>
+                <p class="alert alert-danger">El saldo de la caja no es suficiente</p>
             }
             <input type="hidden" asp-for="id" />
             <div class="form-group">
-                  <label name="id_caja" class="control-label">Cajas de Ahorro</label>
-                  <select name="Id_caja" class="form-control">
-                      @foreach (var item in ViewBag.cajas)
-                      {
-                          <option value="@item.id">caja: @item.cbu ; saldo: @item.saldo</option>
-                      }
-                  </select>
+                <label asp-for="numero" class="control-label">Número</label>
+                <input asp-for="numero" class="form-control" readonly  />
+                <span asp-validation-for="numero" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="consumo" class="control-label">Consumo</label>
+                <input asp-for="consumo" class="form-control" readonly />
+                <span asp-validation-for="consumo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label name="id_caja" class="control-label">Cajas de Ahorro</label>
+                <select name="Id_caja" class="form-control">
+                    @foreach (var item in ViewBag.cajas)
+                    {
+                        <option value="@item.id">caja: @item.cbu ; saldo: @item.saldo</option>
+                    }
+                </select>
             </div>
 
             <div class="form-group">
@@ -38,5 +48,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    }

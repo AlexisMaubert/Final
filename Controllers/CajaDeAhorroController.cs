@@ -111,7 +111,10 @@ namespace Final.Controllers
                 return RedirectToAction("Index", "Login");
             }
             ViewBag.Admin = uLogeado.isAdmin;
-
+            if (uLogeado.isAdmin)
+            {
+                ViewBag.titulares = _context.usuarios.ToList();
+            }
             ViewBag.id_titular = new SelectList(_context.usuarios, "id", "apellido");
             Random random = new();
             int nuevoNumero = random.Next(100000000, 999999999);
@@ -130,18 +133,31 @@ namespace Final.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id,cbu,saldo")] CajaDeAhorro cajaDeAhorro)
+        public async Task<IActionResult> Create(int id_titular,[Bind("id,cbu,saldo")] CajaDeAhorro cajaDeAhorro)
         {
-            if(cajaDeAhorro.saldo < 0)
+            if (uLogeado.isAdmin)
+            {
+                ViewBag.titulares = _context.usuarios.ToList();
+            }
+            if (cajaDeAhorro.saldo < 0)
             {
                 ViewBag.error = 0;
                 return View(cajaDeAhorro);
             }
             if (ModelState.IsValid)
             {
+                Usuario titular;
+                if (uLogeado.isAdmin)
+                {
+                    titular = _context.usuarios.FirstOrDefault(u => u.id == id_titular);
+                }
+                else
+                {
+                    titular = uLogeado;
+                }
                 _context.Add(cajaDeAhorro);
-                uLogeado.cajas.Add(cajaDeAhorro);
-                cajaDeAhorro.titulares.Add(uLogeado);
+                titular.cajas.Add(cajaDeAhorro);
+                cajaDeAhorro.titulares.Add(titular);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Index", "CajaDeAhorro", new { success = "1" });
             }
@@ -589,6 +605,56 @@ namespace Final.Controllers
             {
                 return false;
             }
+        }
+        [HttpGet]
+        public async Task<IActionResult> Movimientos(int id)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            @ViewBag.Id_caja = id;
+            return View(await _context.movimientos.Where(m => m.id_Caja == id).ToListAsync());
+        }
+        [HttpPost]
+        public async Task<IActionResult> Movimientos(int Id_caja, DateTime Fecha, float Monto, string Detalle)
+        {
+            @ViewBag.Id_caja = Id_caja;
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            DateTime fechadefault = new DateTime(0001, 1, 1, 0, 0, 0);
+            if (DateTime.Compare(Fecha,fechadefault) != 0 && Monto != 0 && Detalle != null) // los 3
+            {
+                return View(await _context.movimientos.Where(movimiento => movimiento.monto == Monto && movimiento.fecha.Date == Fecha.Date && movimiento.detalle == Detalle && movimiento.id_Caja == Id_caja).ToListAsync());
+            }
+            if (DateTime.Compare(Fecha, fechadefault) != 0 &&  Monto != 0 && Detalle == null) //Monto y Fecha
+            {
+                return View(await _context.movimientos.Where(m => m.monto == Monto && m.fecha.Date == Fecha.Date && m.id_Caja == Id_caja).ToListAsync());
+            }
+            if (DateTime.Compare(Fecha, fechadefault) != 0 &&  Monto == 0 && Detalle != null) //Fecha y Detalle
+            {
+                return View(await _context.movimientos.Where(m => m.detalle == Detalle && m.fecha.Date == Fecha.Date && m.id_Caja == Id_caja).ToListAsync());
+            }
+            if (DateTime.Compare(Fecha, fechadefault) == 0 && Monto != 0 && Detalle != null) //Monto y Detalle
+            {
+                return View(await _context.movimientos.Where(m => m.detalle == Detalle && m.monto == Monto && m.id_Caja == Id_caja).ToListAsync());
+            }
+            if (DateTime.Compare(Fecha, fechadefault) != 0 && Monto == 0 && Detalle == null) //Fecha
+            {
+                return View(await _context.movimientos.Where(movimiento => movimiento.fecha.Date == Fecha.Date && movimiento.id_Caja == Id_caja).ToListAsync());
+            }
+            if (DateTime.Compare(Fecha, fechadefault) == 0 && Monto != 0 && Detalle == null) //Monto
+            {
+                return View(await _context.movimientos.Where(movimiento => movimiento.monto == Monto && movimiento.id_Caja == Id_caja).ToListAsync());
+            }
+            if (DateTime.Compare(Fecha, fechadefault) == 0 && Monto == 0 && Detalle != null) //Detalle
+            {
+                return View(await _context.movimientos.Where(m => m.detalle == Detalle && m.id_Caja == Id_caja).ToListAsync());
+            }
+
+            return View(await _context.movimientos.Where(m => m.id_Caja == Id_caja).ToListAsync());
         }
     }
 }
