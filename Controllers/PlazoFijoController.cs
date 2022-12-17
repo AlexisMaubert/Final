@@ -53,6 +53,27 @@ namespace Final.Controllers
                 return View(uLogeado.pf.ToList());
             }
         }
+        [HttpGet]
+        public IActionResult Index(int success)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            ViewBag.success = success;
+            if (uLogeado.isAdmin)
+            {
+                ViewBag.Admin = true;
+                ViewBag.Nombre = "Administrador: " + uLogeado.nombre + " " + uLogeado.apellido;
+                return View(_context.plazosFijos.ToList());
+            }
+            else
+            {
+                ViewBag.Admin = false;
+                ViewBag.Nombre = uLogeado.nombre + " " + uLogeado.apellido;
+                return View(uLogeado.pf.ToList());
+            }
+        }
 
         // GET: PlazoFijo/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -164,7 +185,7 @@ namespace Final.Controllers
                 altaMovimiento(caja, "Alta plazo fijo", plazoFijo.monto);
                 _context.Update(caja);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index","PlazoFijo", new {success = 1});
             }
 
             ViewData["id_titular"] = new SelectList(_context.usuarios, "id", "apellido", plazoFijo.id_titular);
@@ -216,7 +237,7 @@ namespace Final.Controllers
             }
             _context.plazosFijos.Remove(plazoFijo);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "PlazoFijo", new { success = 2 });
         }
 
         private bool PlazoFijoExists(int id)

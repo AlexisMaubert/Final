@@ -54,7 +54,7 @@ namespace Final.Controllers
             }
         }
         [HttpGet]
-        public IActionResult Index(string success)
+        public IActionResult Index(int success)
         {
             if (uLogeado == null)
             {
@@ -105,7 +105,7 @@ namespace Final.Controllers
                 return RedirectToAction("Index", "Login");
             }
             ViewData["id_usuario"] = new SelectList(_context.usuarios, "id", "apellido");
-
+            ViewBag.Admin = uLogeado.isAdmin;
             return View();
         }
 
@@ -114,12 +114,18 @@ namespace Final.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("id,id_usuario,nombre,monto,pagado")] Pago pago)
+        public async Task<IActionResult> Create([Bind("id,id_usuario,nombre,monto")] Pago pago)
         {
             if (uLogeado == null)
             {
                 return RedirectToAction("Index", "Login");
             }
+            if(pago.monto < 0)
+            {
+                ViewBag.error = 1;
+                return View();
+            }
+            ViewBag.Admin = uLogeado.isAdmin;
             ViewData["id_usuario"] = new SelectList(_context.usuarios, "id", "apellido", pago.id_usuario);
             Usuario titular;
             if (uLogeado.isAdmin)
@@ -139,6 +145,7 @@ namespace Final.Controllers
             if (ModelState.IsValid)
             {
                 pago.metodo = "No pagado";
+                pago.pagado = false;
                 pago.usuario = titular;
                 _context.Add(pago);
                 titular.pagos.Add(pago);
@@ -149,38 +156,13 @@ namespace Final.Controllers
             return View(pago);
         }
 
-        // GET: Pago/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (uLogeado == null)
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            if (!uLogeado.isAdmin)
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            ViewBag.Admin = uLogeado.isAdmin;
-            if (id == null || _context.pagos == null)
-            {
-                return NotFound();
-            }
-            var pago = await _context.pagos.FindAsync(id);
-            if (pago == null)
-            {
-                return NotFound();
-            }
-            ViewData["id_usuario"] = new SelectList(_context.usuarios, "id", "apellido", pago.id_usuario);
-            return View(pago);
-        }
 
         // POST: Pago/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id,id_usuario,nombre,monto,pagado,metodo")] Pago pago)
+        public async Task<IActionResult> Edit(int id)
         {
+            Pago pago = _context.pagos.FirstOrDefault(p => p.id == id);
             if (id != pago.id)
             {
                 return NotFound();
@@ -191,6 +173,15 @@ namespace Final.Controllers
                 ViewBag.Admin = uLogeado.isAdmin; //Es para la vista
                 try
                 {
+                    pago.pagado = !pago.pagado;
+                    if (pago.metodo == "No pagado")
+                    {
+                        pago.metodo = "Pagado desde el banco";
+                    }
+                    else
+                    {
+                        pago.metodo = "No pagado";
+                    }
                     _context.Update(pago);
                     await _context.SaveChangesAsync();
                 }
@@ -208,7 +199,7 @@ namespace Final.Controllers
                 return RedirectToAction("Index", "Pago", new { success = 2 });
             }
             ViewData["id_usuario"] = new SelectList(_context.usuarios, "id", "apellido", pago.id_usuario);
-            return View(pago);
+            return RedirectToAction("Index", "Pago"); ;
         }
 
         // GET: Pago/Delete/5
@@ -324,6 +315,21 @@ namespace Final.Controllers
             {
                 return NotFound();
             }
+            if (uLogeado.isAdmin)
+            {
+                ViewBag.cajas = _context.cajas.ToList();
+                ViewBag.tarjetas = _context.tarjetas.ToList();
+                pago = await _context.pagos
+                   .Include(p => p.usuario)
+                   .FirstOrDefaultAsync(m => m.id == id);
+            }
+            else
+            {
+                ViewBag.cajas = uLogeado.cajas.ToList();
+                ViewBag.tarjetas = uLogeado.tarjetas.ToList();
+                pago = uLogeado.pagos
+                    .FirstOrDefault(p => p.id == id);
+            }
             if (pago.pagado)
             {
                 ViewBag.error = 0;
@@ -357,7 +363,7 @@ namespace Final.Controllers
                 }
                 pago.metodo = "Tarjeta";
                 tarjeta.consumo += pago.monto;
-                _context.Update(caja);
+                _context.Update(tarjeta);
             }
             pago.pagado = true;
             _context.Update(pago);

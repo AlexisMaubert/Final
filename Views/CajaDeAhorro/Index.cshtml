@@ -5,8 +5,8 @@
 }
 
 <h1>Cajas</h1>
-@if(ViewData["success"] != null){
-    @switch(ViewData["success"]){
+@if(ViewBag.success != null){
+    @switch(ViewBag.success){
         case("1"):
         <p class="alert alert-success">La caja se creo con éxito</p>
         break;

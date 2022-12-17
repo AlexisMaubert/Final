@@ -5,7 +5,16 @@
 }
 
 <h1>Plazos fijos</h1>
-
+@if(ViewBag.success != null){
+    @switch(ViewBag.success){
+        case(1):
+        <p class="alert alert-success">Plazo fijo se creo con éxito</p>
+        break;
+        case(2):
+        <p class="alert alert-success">El plazo fijo se eliminó con éxito</p>
+        break;
+    }
+}
 <p>
     <a asp-action="Create">Crear Plazo fijo</a>
 </p>

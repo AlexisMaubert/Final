@@ -5,7 +5,22 @@
 }
 
 <h1>Tarjetas</h1>
-
+@if(ViewBag.success != null){
+    @switch(ViewBag.success){
+        case(1):
+        <p class="alert alert-success">La tarjeta se creo con éxito</p>
+        break;
+        case(2):
+        <p class="alert alert-success">La tarjeta se editó con éxito</p>
+        break;
+        case(3):
+        <p class="alert alert-success">La tarjeta se eliminó correctamente</p>
+        break;
+        case(4):
+        <p class="alert alert-success">La tarjeta se abonó con éxito</p>
+        break;
+    }
+}
 <p>
     <a asp-action="Create">Nueva tarjeta</a>
 </p>
@@ -49,12 +64,10 @@
                 @Html.DisplayFor(modelItem => item.titular.apellido)
             </td>
             <td>
-                @if (ViewData["Admin"] == "True")
-                {
-                    <a asp-action="Edit" asp-route-id="@item.id">Editar</a> 
-                }
                 <a asp-action="Details" asp-route-id="@item.id">Detalles</a> 
+                <a asp-action="PagarTarjeta" asp-route-id="@item.id">Pagar </a>
                 <a asp-action="Delete" asp-route-id="@item.id">Eliminar</a>
+
             </td>
         </tr>
 }

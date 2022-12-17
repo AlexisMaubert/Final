@@ -1,0 +1,42 @@
+﻿@model Final.Models.Tarjeta
+
+@{
+    ViewData["Title"] = "Pagar";
+}
+
+<h1>Pagar</h1>
+
+<h4>Pagar</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="PagarTarjeta">
+            @if (ViewBag.error != null)
+            {
+               <p class="alert alert-danger">El saldo de la caja no es suficiente</p>
+            }
+            <input type="hidden" asp-for="id" />
+            <div class="form-group">
+                  <label name="id_caja" class="control-label">Cajas de Ahorro</label>
+                  <select name="Id_caja" class="form-control">
+                      @foreach (var item in ViewBag.cajas)
+                      {
+                          <option value="@item.id">caja: @item.cbu ; saldo: @item.saldo</option>
+                      }
+                  </select>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="pagarTarjeta" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Volver</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -56,7 +56,7 @@ namespace Final.Controllers
                 ViewBag.Nombre = uLogeado.nombre + " " + uLogeado.apellido;
                 return View(uLogeado.cajas.ToList());
             }
-            
+
         }
         [HttpGet]
         public IActionResult Index(string success)
@@ -132,13 +132,18 @@ namespace Final.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("id,cbu,saldo")] CajaDeAhorro cajaDeAhorro)
         {
+            if(cajaDeAhorro.saldo < 0)
+            {
+                ViewBag.error = 0;
+                return View(cajaDeAhorro);
+            }
             if (ModelState.IsValid)
             {
                 _context.Add(cajaDeAhorro);
                 uLogeado.cajas.Add(cajaDeAhorro);
                 cajaDeAhorro.titulares.Add(uLogeado);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Index","CajaDeAhorro", new { success = "1" });
+                return RedirectToAction("Index", "CajaDeAhorro", new { success = "1" });
             }
             return View(cajaDeAhorro);
         }
@@ -174,6 +179,11 @@ namespace Final.Controllers
             {
                 return NotFound();
             }
+            if (cajaDeAhorro.saldo < 0)
+            {
+                ViewBag.error = 0;
+                return View(cajaDeAhorro);
+            }
 
             if (ModelState.IsValid)
             {
@@ -193,7 +203,7 @@ namespace Final.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction("Index","CajaDeAhorro", new { success = "2" });
+                return RedirectToAction("Index", "CajaDeAhorro", new { success = "2" });
             }
             return View(cajaDeAhorro);
         }
@@ -352,7 +362,12 @@ namespace Final.Controllers
             {
                 return NotFound();
             }
-            if (Monto <= 0)
+            if (Monto < 0)
+            {
+                ViewBag.error = 0;
+                return View(caja);
+            }
+            if(Monto > caja.saldo)
             {
                 ViewBag.error = 1;
                 return View(caja);
@@ -380,6 +395,7 @@ namespace Final.Controllers
         {
             CajaDeAhorro cajaMia = uLogeado.cajas.FirstOrDefault(c => c.cbu == CbuOrigen);
             CajaDeAhorro cajaDestino = _context.cajas.FirstOrDefault(c => c.cbu == CbuDestino);
+            ViewBag.cbuOrigen = uLogeado.cajas;
             if (cajaMia == null)
             {
                 ViewBag.error = 1;
@@ -395,7 +411,7 @@ namespace Final.Controllers
                 ViewBag.error = 3;
                 return View();
             }
-            if (cajaDestino.saldo < Monto)
+            if (cajaMia.saldo < Monto)
             {
                 ViewBag.error = 4;
                 return View();
@@ -453,6 +469,7 @@ namespace Final.Controllers
             {
                 caja = _context.cajas.FirstOrDefault(C => C.id == id);
                 usuario = _context.usuarios.FirstOrDefault(C => C.id == idUsuario);
+                ViewBag.usuarios =  _context.usuarios.ToList();
             }
             else
             {
@@ -522,7 +539,6 @@ namespace Final.Controllers
             {
                 caja = _context.cajas.FirstOrDefault(C => C.id == id);
                 usuario = _context.usuarios.FirstOrDefault(C => C.id == idUsuario);
-
             }
             else
             {
@@ -533,7 +549,7 @@ namespace Final.Controllers
             {
                 return NotFound();
             }
-
+            ViewBag.Admin = uLogeado.isAdmin;
             ViewBag.Titulares = caja.titulares;
             if (caja.titulares.Count() == 1)
             {
@@ -546,7 +562,7 @@ namespace Final.Controllers
             _context.Update(caja);
             _context.SaveChanges();
 
-            return RedirectToAction("Index", "CajaDeAhorro", new { succes = "8" });
+            return RedirectToAction("Index", "CajaDeAhorro", new { success = "8" });
         }
         private bool CajaDeAhorroExists(int id)
         {

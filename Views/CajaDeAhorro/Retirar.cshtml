@@ -14,7 +14,12 @@
         <form asp-action="Retirar">
             @if (ViewBag.error != null)
             {
-                <p class="alert alert-danger">Ingrese un monto correcto.</p>
+               @switch(ViewBag.error){
+                    case(0): <p class="alert alert-danger">Ingrese un monto correcto</p>
+                    break;
+                    case(1): <p class="alert alert-danger">Saldo insuficiente</p>
+                    break;
+                }
             }
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="id" />

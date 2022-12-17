@@ -44,6 +44,26 @@ namespace Final.Controllers
                 ViewData["Admin"] = "True";
                 var miContexto = _context.tarjetas.Include(t => t.titular);
                 return View(miContexto.ToList());
+            }
+            else
+            {
+                ViewData["Admin"] = "False";
+                return View(uLogeado.tarjetas.ToList());
+            }
+        }
+        [HttpGet]
+        public IActionResult Index(int success)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            ViewBag.success = success;
+            if (uLogeado.isAdmin)
+            {
+                ViewData["Admin"] = "True";
+                var miContexto = _context.tarjetas.Include(t => t.titular);
+                return View(miContexto.ToList());
 
             }
             else
@@ -110,15 +130,31 @@ namespace Final.Controllers
             {
                 return RedirectToAction("Index", "Login");
             }
-
+            ViewBag.Admin = uLogeado.isAdmin;
             if (ModelState.IsValid)
             {
+
                 if (uLogeado.isAdmin)
                 {
+                    if (tarjeta.consumo > tarjeta.limite)
+                    {
+                        ViewBag.error = 0;
+                        View();
+                    }
+                    if (tarjeta.limite < 0)
+                    {
+                        ViewBag.error = 1;
+                        View();
+                    }
+                    if (tarjeta.consumo < 0)
+                    {
+                        ViewBag.error = 2;
+                        View();
+                    }
                     Usuario usuario = await _context.usuarios.Where(u => u.id == tarjeta.id_titular).FirstOrDefaultAsync();
                     tarjeta.titular = usuario;
                     usuario.tarjetas.Add(tarjeta);
-                    _context.Update(usuario);  
+                    _context.Update(usuario);
                 }
                 else
                 {
@@ -129,70 +165,9 @@ namespace Final.Controllers
                 }
                 _context.Add(tarjeta);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index","Tarjetas", new { success = 1});
             }
             ViewBag.id_titular = new SelectList(_context.usuarios, "id", "apellido", tarjeta.id_titular);
-            return View(tarjeta);
-        }
-
-        // GET: Tarjetas/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (uLogeado == null)
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            if (!uLogeado.isAdmin)
-            {
-                return RedirectToAction("Index", "Main");
-            }
-            if (id == null || _context.tarjetas == null)
-            {
-                return NotFound();
-            }
-
-            var tarjeta = await _context.tarjetas.FindAsync(id);
-            if (tarjeta == null)
-            {
-                return NotFound();
-            }
-
-            return View(tarjeta);
-        }
-
-        // POST: Tarjetas/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id,id_titular,numero,codigoV,limite,consumo")] Tarjeta tarjeta)
-        {
-            if (id != tarjeta.id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(tarjeta);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TarjetaExists(tarjeta.id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["id_titular"] = new SelectList(_context.usuarios, "id", "apellido", tarjeta.id_titular);
             return View(tarjeta);
         }
 
@@ -239,10 +214,78 @@ namespace Final.Controllers
                 return View(tarjeta);
             }
             _context.tarjetas.Remove(tarjeta);
+            tarjeta.titular.tarjetas.Remove(tarjeta);
+            _context.Update(tarjeta.titular);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index","Tarjetas");
+            return RedirectToAction("Index", "Tarjetas", new { success = 3 });
         }
-        // GET: Depositar
+
+        // GET: Tarjetas/pagarTarjeta
+        public IActionResult PagarTarjeta(int? id)
+        {
+            if (uLogeado == null)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            if (id == null || _context.tarjetas == null)
+            {
+                return NotFound();
+            }
+            var tarjeta = _context.tarjetas.FirstOrDefault(t => t.id == id);
+            ViewBag.cajas = uLogeado.cajas.ToList();
+            return View(tarjeta);
+        }
+
+        // POST: Tarjetas/pagarTarjeta
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult PagarTarjeta(int? id, int id_caja)
+        {
+            if (_context.tarjetas == null)
+            {
+                return Problem("Entity set 'MiContexto.tarjetas'  is null.");
+            }
+            ViewBag.cajas = uLogeado.cajas.ToList();
+            var tarjeta = _context.tarjetas.FirstOrDefault(t => t.id == id);
+            if (tarjeta == null)
+            {
+                return NotFound();
+            }
+            CajaDeAhorro caja =  _context.cajas.Where(c => c.id == id_caja).FirstOrDefault();
+            if (caja == null)
+            {
+                return NotFound();
+            }
+            if(caja.saldo < tarjeta.consumo)
+            {
+                ViewBag.error = 0;
+                return View(tarjeta);
+            }
+            caja.saldo -= tarjeta.consumo;
+            altaMovimiento(caja, "Pago tarjeta", tarjeta.consumo);
+            tarjeta.consumo = 0;
+            _context.Update(tarjeta);
+            _context.Update(caja);
+            _context.SaveChanges();
+            return RedirectToAction("Index", "Tarjetas", new { success = 4 });
+        }
+
+        public bool altaMovimiento(CajaDeAhorro Caja, string Detalle, float Monto)
+        {
+            try
+            {
+                Movimiento movimientoNuevo = new Movimiento(Caja, Detalle, Monto);
+                _context.movimientos.Add(movimientoNuevo);
+                Caja.movimientos.Add(movimientoNuevo);
+                _context.Update(Caja);
+                _context.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         private bool TarjetaExists(int id)
         {

@@ -11,6 +11,17 @@
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
+            @if (ViewBag.error != null)
+            {
+               @switch(ViewBag.error){
+                    case(0): <p class="alert alert-danger">El consumo es mayor el que límite</p>
+                    break;
+                    case(1): <p class="alert alert-danger">Limite ingresado incorrecto</p>
+                    break;
+                    case(2): <p class="alert alert-danger">El consumo es incorrecto</p>
+                    break;
+                }
+            }
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             @if (ViewBag.Admin == true)
             {

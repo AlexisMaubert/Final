@@ -11,6 +11,12 @@
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
+            @if(ViewBag.error != null){
+                @switch(ViewBag.error){
+                    case(0): <p class="alert alert-danger">Ingrese un monto correcto</p>
+                    break;
+                }
+            }
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="id" />
             <div class="form-group">
